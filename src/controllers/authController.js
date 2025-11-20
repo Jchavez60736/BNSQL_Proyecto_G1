@@ -1,7 +1,12 @@
 const authService = require('../services/authService');
 
 exports.renderLogin = (req, res) => {
-    res.render('login', { error: null });
+    res.render('login', { 
+        layout: false,
+        error: null,
+        nombreCompleto: null,
+        rol: null
+     });
 };
 
 exports.loginUser = async (req, res) => {
@@ -18,6 +23,7 @@ exports.loginUser = async (req, res) => {
     req.session.rol = user.rol;
 
     res.redirect('/home');
+
 };
 
 exports.logout = (req, res) => {
