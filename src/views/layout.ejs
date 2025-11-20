@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<%- include('partials/header') %>
+
+    <head>
+        <meta charset="UTF-8">
+        <title>MOM</title>
+        <link rel="stylesheet" href="/css/estilos.css">
+    </head>
+
+    <body class="dashboard">
+
+        <div class="dashboard-container">
+
+            <aside class="sidebar">
+                <%if (nombreCompleto && rol) { %>
+                        <%- include('partials/sidebar', { nombreCompleto: nombreCompleto, rol: rol}) %>
+                    <% } %>
+            </aside>
+
+            <main class="main-content">
+                <%- body %>
+            </main>
+
+        </div>
+
+    </body>
+
+    <%- include('partials/footer') %>
+
+</html>
