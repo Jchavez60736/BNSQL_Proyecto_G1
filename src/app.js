@@ -6,6 +6,8 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const { ensureAuth } = require('./middlewares/authMiddleware');
 
+const personaRoutes = require('./routes/persona.routes'); // <<--- añadido
+
 const app = express();
 
 // Conectar a MongoDB
@@ -32,8 +34,12 @@ const expressLayouts = require('express-ejs-layouts');
 app.use(expressLayouts);
 app.set('layout', 'layout');
 
-// Rutas
+// Rutas de autenticación (login, logout, etc.)
 app.use(authRoutes);
+
+// Rutas API Personas (JSON) – protegidas si quieres
+// Si quieres que solo usuarios logueados accedan, descomenta ensureAuth:
+app.use('/api/personas', /* ensureAuth, */ personaRoutes);
 
 // Home protegido
 app.get('/home', ensureAuth, (req, res) => {
