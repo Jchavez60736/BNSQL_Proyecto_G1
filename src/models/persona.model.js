@@ -49,7 +49,7 @@ const personaSchema = new mongoose.Schema(
     },
     {
         collection: 'personas',
-        timestamps: true
+        timestamps: true // createdAt y updatedAt automáticos
     }
 );
 

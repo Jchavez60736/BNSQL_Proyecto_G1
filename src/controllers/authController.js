@@ -1,12 +1,12 @@
 const authService = require('../services/authService');
 
 exports.renderLogin = (req, res) => {
-    res.render('login', { 
+    res.render('login', {
         layout: false,
         error: null,
         nombreCompleto: null,
         rol: null
-     });
+    });
 };
 
 exports.loginUser = async (req, res) => {

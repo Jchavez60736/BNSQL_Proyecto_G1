@@ -6,7 +6,12 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const { ensureAuth } = require('./middlewares/authMiddleware');
 
-const personaRoutes = require('./routes/persona.routes'); // <<--- añadido
+const personaRoutes = require('./routes/persona.routes'); 
+const mantenimientoRoutes = require('./routes/mantenimiento.routes');
+const itemRoutes = require('./routes/item.routes');
+const prestamoRoutes = require('./routes/prestamo.routes');
+const devolucionRoutes = require('./routes/devolucion.routes');
+
 
 const app = express();
 
@@ -34,12 +39,14 @@ const expressLayouts = require('express-ejs-layouts');
 app.use(expressLayouts);
 app.set('layout', 'layout');
 
-// Rutas de autenticación (login, logout, etc.)
-app.use(authRoutes);
+// Rutas de autenticación (login, logout, etc.) (para protegerlas, se usa ensureAuth)
 
-// Rutas API Personas (JSON) – protegidas si quieres
-// Si quieres que solo usuarios logueados accedan, descomenta ensureAuth:
+app.use(authRoutes);
 app.use('/api/personas', /* ensureAuth, */ personaRoutes);
+app.use('/api/mantenimientos', /* ensureAuth, */ mantenimientoRoutes); 
+app.use('/api/items', /* ensureAuth, */ itemRoutes);
+app.use('/api/prestamos', /* ensureAuth, */ prestamoRoutes);
+app.use('/api/devoluciones', /* ensureAuth, */ devolucionRoutes);
 
 // Home protegido
 app.get('/home', ensureAuth, (req, res) => {
