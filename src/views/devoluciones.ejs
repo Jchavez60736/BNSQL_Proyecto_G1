@@ -1,0 +1,487 @@
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/home">Inicio</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Devoluciones</li>
+    </ol>
+</nav>
+
+<!-- Encabezado -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2">Gestión de Devoluciones</h1>
+    <button class="btn btn-teal" data-bs-toggle="modal" data-bs-target="#modalDevolucion">
+        <i class="bi bi-plus-circle"></i> Nueva Devolución
+    </button>
+</div>
+
+<!-- Tabla de Devoluciones -->
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover" id="tablaDevoluciones">
+                <thead class="table-light">
+                    <tr>
+                        <th>Fecha Devolución</th>
+                        <th>Préstamo ID</th>
+                        <th>Persona que Devuelve</th>
+                        <th>Cantidad de Ítems</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="cuerpoTabla">
+                    <!-- Las filas se cargarán con JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        <div id="sinDatos" class="alert alert-info text-center mt-3">
+            No hay devoluciones registradas aún.
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Crear/Editar Devolución -->
+<div class="modal fade" id="modalDevolucion" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tituloModal">Nueva Devolución</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formularioDevolucion">
+                    <input type="hidden" id="idDevolucion">
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="fechaDevolucion" class="form-label">Fecha de Devolución *</label>
+                                <input type="datetime-local" class="form-control" id="fechaDevolucion" required>
+                                <small class="text-danger" id="errorFecha"></small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="idPrestamo" class="form-label">ID del Préstamo *</label>
+                                <input type="text" class="form-control" id="idPrestamo" required>
+                                <small class="text-danger" id="errorPrestamo"></small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="idPersonaDevuelve" class="form-label">Persona que Devuelve *</label>
+                        <input type="text" class="form-control" id="idPersonaDevuelve" required>
+                        <small class="text-danger" id="errorPersona"></small>
+                    </div>
+
+                    <!-- Detalles de Items Devueltos -->
+                    <div class="mb-4">
+                        <h6 class="mb-3">Detalles de Ítems Devueltos</h6>
+                        <div id="detallesContainer">
+                            <div class="detalle-item mb-3 p-3 border rounded" data-index="0">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label">ID del Ítem *</label>
+                                        <input type="text" class="form-control idItem" required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Cantidad *</label>
+                                        <input type="number" class="form-control cantidad" min="1" required>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label class="form-label">Estado</label>
+                                        <select class="form-control estadoDevolucion">
+                                            <option value="Bueno">Bueno</option>
+                                            <option value="Dañado">Dañado</option>
+                                            <option value="Reparación requerida">Reparación requerida</option>
+                                            <option value="Otro">Otro</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label">Observaciones</label>
+                                    <textarea class="form-control observaciones" rows="2"></textarea>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-danger" onclick="eliminarDetalle(this)">
+                                    <i class="bi bi-trash"></i> Eliminar
+                                </button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="agregarDetalle()">
+                            <i class="bi bi-plus"></i> Agregar Ítem
+                        </button>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="observacionesGenerales" class="form-label">Observaciones Generales</label>
+                        <textarea class="form-control" id="observacionesGenerales" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-teal" id="btnGuardar">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Detalles -->
+<div class="modal fade" id="modalDetalles" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalles de la Devolución</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="detallesContent">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const modalDevolucion = new bootstrap.Modal(document.getElementById('modalDevolucion'));
+    const modalDetalles = new bootstrap.Modal(document.getElementById('modalDetalles'));
+    let editando = false;
+    let detalleCount = 1;
+
+    // Cargar devoluciones al iniciar
+    cargarDevoluciones();
+
+    // Evento del botón guardar
+    document.getElementById('btnGuardar').addEventListener('click', guardarDevolucion);
+
+    // Evento para limpiar modal al cerrar
+    document.getElementById('modalDevolucion').addEventListener('hidden.bs.modal', () => {
+        document.getElementById('formularioDevolucion').reset();
+        document.getElementById('idDevolucion').value = '';
+        document.getElementById('detallesContainer').innerHTML = `
+            <div class="detalle-item mb-3 p-3 border rounded" data-index="0">
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label">ID del Ítem *</label>
+                        <input type="text" class="form-control idItem" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Cantidad *</label>
+                        <input type="number" class="form-control cantidad" min="1" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Estado</label>
+                        <select class="form-control estadoDevolucion">
+                            <option value="Bueno">Bueno</option>
+                            <option value="Dañado">Dañado</option>
+                            <option value="Reparación requerida">Reparación requerida</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <label class="form-label">Observaciones</label>
+                    <textarea class="form-control observaciones" rows="2"></textarea>
+                </div>
+                <button type="button" class="btn btn-sm btn-danger" onclick="eliminarDetalle(this)">
+                    <i class="bi bi-trash"></i> Eliminar
+                </button>
+            </div>
+        `;
+        document.getElementById('tituloModal').textContent = 'Nueva Devolución';
+        detalleCount = 1;
+        editando = false;
+    });
+
+    function agregarDetalle() {
+        const container = document.getElementById('detallesContainer');
+        const detalle = document.createElement('div');
+        detalle.className = 'detalle-item mb-3 p-3 border rounded';
+        detalle.innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <label class="form-label">ID del Ítem *</label>
+                    <input type="text" class="form-control idItem" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Cantidad *</label>
+                    <input type="number" class="form-control cantidad" min="1" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Estado</label>
+                    <select class="form-control estadoDevolucion">
+                        <option value="Bueno">Bueno</option>
+                        <option value="Dañado">Dañado</option>
+                        <option value="Reparación requerida">Reparación requerida</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mb-2">
+                <label class="form-label">Observaciones</label>
+                <textarea class="form-control observaciones" rows="2"></textarea>
+            </div>
+            <button type="button" class="btn btn-sm btn-danger" onclick="eliminarDetalle(this)">
+                <i class="bi bi-trash"></i> Eliminar
+            </button>
+        `;
+        container.appendChild(detalle);
+    }
+
+    function eliminarDetalle(btn) {
+        const items = document.querySelectorAll('.detalle-item');
+        if (items.length > 1) {
+            btn.closest('.detalle-item').remove();
+        } else {
+            alert('Debe tener al menos un ítem en la devolución');
+        }
+    }
+
+    async function cargarDevoluciones() {
+        try {
+            const respuesta = await fetch('/api/devoluciones');
+            const datos = await respuesta.json();
+
+            const cuerpoTabla = document.getElementById('cuerpoTabla');
+            const sinDatos = document.getElementById('sinDatos');
+            
+            cuerpoTabla.innerHTML = '';
+
+            if (datos.ok && datos.data.length > 0) {
+                sinDatos.style.display = 'none';
+                datos.data.forEach(devolucion => {
+                    const fecha = new Date(devolucion.fechaDevolucion).toLocaleDateString();
+                    const cantidad = devolucion.detalles ? devolucion.detalles.length : 0;
+                    
+                    const fila = document.createElement('tr');
+                    fila.innerHTML = `
+                        <td>${fecha}</td>
+                        <td><code>${devolucion.idPrestamo}</code></td>
+                        <td><strong>${devolucion.idPersonaDevuelve}</strong></td>
+                        <td>${cantidad}</td>
+                        <td>
+                            <span class="badge bg-success">Completada</span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="verDetalles('${devolucion._id}')">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-warning" onclick="editarDevolucion('${devolucion._id}')">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="eliminarDevolucion('${devolucion._id}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    cuerpoTabla.appendChild(fila);
+                });
+            } else {
+                sinDatos.style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Error al cargar devoluciones:', error);
+        }
+    }
+
+    async function guardarDevolucion() {
+        const id = document.getElementById('idDevolucion').value;
+        const fechaDevolucion = document.getElementById('fechaDevolucion').value;
+        const idPrestamo = document.getElementById('idPrestamo').value;
+        const idPersonaDevuelve = document.getElementById('idPersonaDevuelve').value;
+        const observacionesGenerales = document.getElementById('observacionesGenerales').value;
+
+        if (!fechaDevolucion || !idPrestamo || !idPersonaDevuelve) {
+            alert('Por favor completa los campos requeridos');
+            return;
+        }
+
+        // Recopilar detalles
+        const detalles = [];
+        const items = document.querySelectorAll('.detalle-item');
+        
+        items.forEach(item => {
+            const idItem = item.querySelector('.idItem').value;
+            const cantidad = item.querySelector('.cantidad').value;
+            const estadoDevolucion = item.querySelector('.estadoDevolucion').value;
+            const observaciones = item.querySelector('.observaciones').value;
+
+            if (idItem && cantidad) {
+                detalles.push({
+                    idItem,
+                    cantidad: parseInt(cantidad),
+                    estadoDevolucion,
+                    observaciones
+                });
+            }
+        });
+
+        if (detalles.length === 0) {
+            alert('Debe agregar al menos un ítem a devolver');
+            return;
+        }
+
+        const datos = {
+            fechaDevolucion: new Date(fechaDevolucion).toISOString(),
+            idPrestamo,
+            idPersonaDevuelve,
+            detalles,
+            observacionesGenerales
+        };
+
+        try {
+            const url = editando ? `/api/devoluciones/${id}` : '/api/devoluciones';
+            const metodo = editando ? 'PUT' : 'POST';
+
+            const respuesta = await fetch(url, {
+                method: metodo,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            });
+
+            const resultado = await respuesta.json();
+
+            if (resultado.ok) {
+                alert(editando ? 'Devolución actualizada correctamente' : 'Devolución registrada correctamente');
+                modalDevolucion.hide();
+                cargarDevoluciones();
+            } else {
+                alert('Error: ' + resultado.msg);
+            }
+        } catch (error) {
+            console.error('Error al guardar:', error);
+            alert('Error al guardar la devolución');
+        }
+    }
+
+    async function verDetalles(id) {
+        try {
+            const respuesta = await fetch(`/api/devoluciones/${id}`);
+            const datos = await respuesta.json();
+
+            if (datos.ok) {
+                const devolucion = datos.data;
+                let html = `
+                    <p><strong>Fecha:</strong> ${new Date(devolucion.fechaDevolucion).toLocaleDateString()}</p>
+                    <p><strong>Préstamo ID:</strong> ${devolucion.idPrestamo}</p>
+                    <p><strong>Persona:</strong> ${devolucion.idPersonaDevuelve}</p>
+                    <h6 class="mt-3">Ítems Devueltos:</h6>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Ítem</th>
+                                <th>Cantidad</th>
+                                <th>Estado</th>
+                                <th>Observaciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                devolucion.detalles.forEach(detalle => {
+                    html += `
+                        <tr>
+                            <td>${detalle.idItem}</td>
+                            <td>${detalle.cantidad}</td>
+                            <td><span class="badge bg-info">${detalle.estadoDevolucion}</span></td>
+                            <td>${detalle.observaciones || '-'}</td>
+                        </tr>
+                    `;
+                });
+
+                html += `
+                        </tbody>
+                    </table>
+                    <p><strong>Observaciones Generales:</strong> ${devolucion.observacionesGenerales || '-'}</p>
+                `;
+
+                document.getElementById('detallesContent').innerHTML = html;
+                modalDetalles.show();
+            }
+        } catch (error) {
+            console.error('Error al obtener detalles:', error);
+        }
+    }
+
+    async function editarDevolucion(id) {
+        try {
+            const respuesta = await fetch(`/api/devoluciones/${id}`);
+            const datos = await respuesta.json();
+
+            if (datos.ok) {
+                const devolucion = datos.data;
+                document.getElementById('idDevolucion').value = devolucion._id;
+                document.getElementById('fechaDevolucion').value = new Date(devolucion.fechaDevolucion).toISOString().slice(0, 16);
+                document.getElementById('idPrestamo').value = devolucion.idPrestamo;
+                document.getElementById('idPersonaDevuelve').value = devolucion.idPersonaDevuelve;
+                document.getElementById('observacionesGenerales').value = devolucion.observacionesGenerales || '';
+
+                // Cargar detalles
+                const container = document.getElementById('detallesContainer');
+                container.innerHTML = '';
+
+                devolucion.detalles.forEach((detalle, index) => {
+                    const detalleDiv = document.createElement('div');
+                    detalleDiv.className = 'detalle-item mb-3 p-3 border rounded';
+                    detalleDiv.innerHTML = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">ID del Ítem *</label>
+                                <input type="text" class="form-control idItem" value="${detalle.idItem}" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Cantidad *</label>
+                                <input type="number" class="form-control cantidad" value="${detalle.cantidad}" min="1" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Estado</label>
+                                <select class="form-control estadoDevolucion">
+                                    <option value="Bueno" ${detalle.estadoDevolucion === 'Bueno' ? 'selected' : ''}>Bueno</option>
+                                    <option value="Dañado" ${detalle.estadoDevolucion === 'Dañado' ? 'selected' : ''}>Dañado</option>
+                                    <option value="Reparación requerida" ${detalle.estadoDevolucion === 'Reparación requerida' ? 'selected' : ''}>Reparación requerida</option>
+                                    <option value="Otro" ${detalle.estadoDevolucion === 'Otro' ? 'selected' : ''}>Otro</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Observaciones</label>
+                            <textarea class="form-control observaciones" rows="2">${detalle.observaciones || ''}</textarea>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="eliminarDetalle(this)">
+                            <i class="bi bi-trash"></i> Eliminar
+                        </button>
+                    `;
+                    container.appendChild(detalleDiv);
+                });
+
+                document.getElementById('tituloModal').textContent = 'Editar Devolución';
+                editando = true;
+                modalDevolucion.show();
+            }
+        } catch (error) {
+            console.error('Error al obtener devolución:', error);
+        }
+    }
+
+    async function eliminarDevolucion(id) {
+        if (!confirm('¿Estás seguro de que deseas eliminar esta devolución?')) {
+            return;
+        }
+
+        try {
+            const respuesta = await fetch(`/api/devoluciones/${id}`, { method: 'DELETE' });
+            const datos = await respuesta.json();
+
+            if (datos.ok) {
+                alert('Devolución eliminada correctamente');
+                cargarDevoluciones();
+            } else {
+                alert('Error: ' + datos.msg);
+            }
+        } catch (error) {
+            console.error('Error al eliminar:', error);
+        }
+    }
+</script>
