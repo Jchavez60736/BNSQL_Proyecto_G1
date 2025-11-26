@@ -26,13 +26,7 @@ const crearItem = async (req, res) => {
 // Obtener todos los ítems
 const obtenerItems = async (req, res) => {
     try {
-        // Filtrado por estadoActual 
-        const { estado } = req.query;
-        const filtro = estado ? { estadoActual: estado } : {};
-
-        const items = await Item
-            .find() // .find(filtro)
-            .sort({ nombreItem: 1 });
+        const items = await Item.find();
 
         return res.json({
             ok: true,

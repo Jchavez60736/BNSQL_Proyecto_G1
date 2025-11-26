@@ -1,0 +1,333 @@
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/home">Inicio</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Eventos</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">Gestión de Eventos</h1>
+        <button class="btn btn-teal" data-bs-toggle="modal" data-bs-target="#modalEvento">
+            <i class="bi bi-plus-circle"></i> Nuevo Evento
+        </button>
+    </div>
+
+    <!-- Tabla -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="tablaEventos">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nombre del Evento</th>
+                            <th>Fecha Inicio</th>
+                            <th>Fecha Fin</th>
+                            <th>Iglesia</th>
+                            <th>Responsable</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoTabla"></tbody>
+                </table>
+            </div>
+
+            <div id="sinDatos" class="alert alert-info text-center mt-3" style="display:none;">
+                No hay eventos registrados aún.
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Crear/Editar -->
+    <div class="modal fade" id="modalEvento" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tituloModal">Nuevo Evento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form id="formEvento">
+                        <input type="hidden" id="idEvento">
+
+                        <div class="mb-3">
+                            <label class="form-label">Nombre del Evento *</label>
+                            <input type="text" class="form-control" id="nombreEvento" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Descripción</label>
+                            <textarea class="form-control" id="descripcion"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Fecha de Inicio *</label>
+                            <input type="date" class="form-control" id="fechaInicio" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Fecha de Fin *</label>
+                            <input type="date" class="form-control" id="fechaFin" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Ubicación</label>
+                            <input type="text" class="form-control" id="ubicacion">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Iglesia Asociada *</label>
+                            <select class="form-control" id="iglesiaAsociada" required></select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Responsable *</label>
+                            <select class="form-control" id="responsable" required></select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Observaciones</label>
+                            <textarea class="form-control" id="observaciones"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Estado</label>
+                            <select class="form-control" id="estado">
+                                <option value="Programado">Programado</option>
+                                <option value="En curso">En curso</option>
+                                <option value="Finalizado">Finalizado</option>
+                                <option value="Cancelado">Cancelado</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-teal" id="btnGuardar">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const modalEvento = new bootstrap.Modal(document.getElementById('modalEvento'));
+        let editando = false;
+
+        cargarEventos();
+
+        document.getElementById('btnGuardar').addEventListener('click', guardarEvento);
+
+        document.getElementById('modalEvento').addEventListener('hidden.bs.modal', () => {
+            document.getElementById('formEvento').reset();
+            document.getElementById('idEvento').value = '';
+            document.getElementById('tituloModal').textContent = 'Nuevo Evento';
+            editando = false;
+        });
+
+        // Cargar lista de eventos
+        async function cargarEventos() {
+            try {
+                const resp = await fetch('/api/eventos');
+                const datos = await resp.json();
+
+                const cuerpoTabla = document.getElementById('cuerpoTabla');
+                const sinDatos = document.getElementById('sinDatos');
+
+                cuerpoTabla.innerHTML = '';
+
+                if (datos.ok && datos.data.length > 0) {
+                    sinDatos.style.display = 'none';
+
+                    datos.data.forEach(ev => {
+                        const fila = document.createElement('tr');
+                        fila.innerHTML = `
+                            <td><strong>${ev.nombreEvento}</strong></td>
+                            <td>${new Date(ev.fechaInicio).toLocaleDateString()}</td>
+                            <td>${new Date(ev.fechaFin).toLocaleDateString()}</td>
+                            <td>${ev.iglesiaAsociada ? ev.iglesiaAsociada.nombreIglesia : ''}</td>
+                            <td>${ev.responsable ? ev.responsable.nombreCompleto : ''}</td>
+                            <td>
+                                <span class="badge ${
+                                    ev.estado === 'Programado' ? 'bg-primary' :
+                                    ev.estado === 'En curso' ? 'bg-warning' :
+                                    ev.estado === 'Finalizado' ? 'bg-success' : 'bg-danger'
+                                }">${ev.estado}</span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-warning" onclick="editarEvento('${ev._id}')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="eliminarEvento('${ev._id}', '${ev.nombreEvento}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        `;
+                        cuerpoTabla.appendChild(fila);
+                    });
+                } else {
+                    sinDatos.style.display = 'block';
+                }
+
+            } catch (error) {
+                console.error('Error al cargar eventos:', error);
+            }
+        }
+
+        // Guardar o actualizar evento
+        async function guardarEvento() {
+            const id = document.getElementById('idEvento').value.trim();
+            const nombreEvento = document.getElementById('nombreEvento').value.trim();
+            const descripcion = document.getElementById('descripcion').value.trim();
+            const fechaInicio = document.getElementById('fechaInicio').value;
+            const fechaFin = document.getElementById('fechaFin').value;
+            const ubicacion = document.getElementById('ubicacion').value.trim();
+            const iglesiaAsociada = document.getElementById('iglesiaAsociada').value;
+            const responsable = document.getElementById('responsable').value;
+            const observaciones = document.getElementById('observaciones').value.trim();
+            const estado = document.getElementById('estado').value;
+
+            if (!nombreEvento || !fechaInicio || !fechaFin || !iglesiaAsociada || !responsable) {
+                alert('Todos los campos obligatorios deben completarse');
+                return;
+            }
+
+            const datos = { nombreEvento, descripcion, fechaInicio, fechaFin, ubicacion, iglesiaAsociada, responsable, observaciones, estado };
+
+            try {
+                const url = editando ? `/api/eventos/${id}` : '/api/eventos';
+                const metodo = editando ? 'PUT' : 'POST';
+
+                const respuesta = await fetch(url, {
+                    method: metodo,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                });
+
+                const resultado = await respuesta.json();
+
+                if (resultado.ok) {
+                    alert(editando ? 'Evento actualizado correctamente' : 'Evento creado correctamente');
+                    modalEvento.hide();
+                    cargarEventos();
+                } else {
+                    alert('Error: ' + resultado.msg);
+                }
+            } catch (error) {
+                console.error('Error al guardar:', error);
+                alert('Error al guardar el Evento');
+            }
+        }
+
+        // Editar
+        async function editarEvento(id) {
+            try {
+                const resp = await fetch(`/api/eventos/${id}`);
+                const datos = await resp.json();
+
+                if (!datos.ok) {
+                    alert('No se pudo cargar el evento');
+                    return;
+                }
+
+                const ev = datos.data;
+
+                await cargarIglesias();
+                await cargarPersonas();
+
+                document.getElementById('idEvento').value = ev._id;
+                document.getElementById('nombreEvento').value = ev.nombreEvento;
+                document.getElementById('descripcion').value = ev.descripcion;
+                document.getElementById('fechaInicio').value = ev.fechaInicio.split('T')[0];
+                document.getElementById('fechaFin').value = ev.fechaFin.split('T')[0];
+                document.getElementById('ubicacion').value = ev.ubicacion;
+                document.getElementById('iglesiaAsociada').value = ev.iglesiaAsociada ? ev.iglesiaAsociada._id : '';
+                document.getElementById('responsable').value = ev.responsable ? ev.responsable._id : '';
+                document.getElementById('observaciones').value = ev.observaciones;
+                document.getElementById('estado').value = ev.estado;
+
+                editando = true;
+                document.getElementById('tituloModal').textContent = 'Editar Evento';
+                modalEvento.show();
+
+            } catch (error) {
+                console.error('Error al obtener evento:', error);
+            }
+        }
+
+        // Eliminar
+        async function eliminarEvento(id, nombre) {
+            if (!confirm(`¿Estás seguro de que deseas eliminar ${nombre}?`)) return;
+
+            try {
+                const resp = await fetch(`/api/eventos/${id}`, { method: 'DELETE' });
+                const datos = await resp.json();
+
+                if (datos.ok) {
+                    alert('Evento eliminado correctamente');
+                    cargarEventos();
+                } else {
+                    alert('Error: ' + datos.msg);
+                }
+            } catch (error) {
+                console.error('Error al eliminar:', error);
+            }
+        }
+
+        // Cargar iglesias
+        async function cargarIglesias() {
+            try {
+                const resp = await fetch('/api/iglesias');
+                const datos = await resp.json();
+
+                const select = document.getElementById('iglesiaAsociada');
+                select.innerHTML = '';
+
+                if (datos.ok && datos.data.length > 0) {
+                    datos.data.forEach(iglesia => {
+                        const option = document.createElement('option');
+                        option.value = iglesia._id;
+                        option.textContent = iglesia.nombreIglesia;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error cargando iglesias:', error);
+            }
+        }
+
+        // Cargar personas
+        async function cargarPersonas() {
+            try {
+                const resp = await fetch('/api/personas');
+                const datos = await resp.json();
+
+                const select = document.getElementById('responsable');
+                select.innerHTML = '';
+
+                if (datos.ok && datos.data.length > 0) {
+                    datos.data.forEach(persona => {
+                        const option = document.createElement('option');
+                        option.value = persona._id;
+                        option.textContent = persona.nombreCompleto;
+                        select.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error cargando personas:', error);
+            }
+        }
+
+        // Inicializar selects al abrir modal
+        document.getElementById('modalEvento').addEventListener('show.bs.modal', () => {
+            cargarIglesias();
+            cargarPersonas();
+        });
+
+    </script>
+</body>

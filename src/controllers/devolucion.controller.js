@@ -118,7 +118,7 @@ const actualizarDevolucion = async (req, res) => {
     }
 };
 
-// Eliminar devolución (borrado físico)
+// Eliminar devolución 
 const eliminarDevolucion = async (req, res) => {
     try {
         const { id } = req.params;

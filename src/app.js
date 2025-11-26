@@ -8,15 +8,15 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const { ensureAuth } = require('./middlewares/authMiddleware');
 
-const personaRoutes = require('./routes/persona.routes'); 
-const mantenimientoRoutes = require('./routes/mantenimiento.routes');
-const itemRoutes = require('./routes/item.routes');
-const prestamoRoutes = require('./routes/prestamo.routes');
-const devolucionRoutes = require('./routes/devolucion.routes');
 const iglesiasRoutes = require('./routes/iglesias.routes');
+const personaRoutes = require('./routes/persona.routes'); 
 const proveedoresRoutes = require('./routes/proveedores.routes');
 const categoriaRoutes = require('./routes/categoria.routes');
-
+const itemRoutes = require('./routes/item.routes');
+const eventoRoutes = require('./routes/evento.routes');
+const prestamoRoutes = require('./routes/prestamo.routes');
+const devolucionRoutes = require('./routes/devolucion.routes');
+const mantenimientoRoutes = require('./routes/mantenimiento.routes');
 
 const expressLayouts = require('express-ejs-layouts');
 
@@ -53,14 +53,16 @@ app.use(
 app.use(authRoutes);
 
 // APIs protegidas
-app.use('/api/personas', ensureAuth, personaRoutes);
-app.use('/api/mantenimientos', ensureAuth, mantenimientoRoutes); 
-app.use('/api/items', ensureAuth, itemRoutes);
-app.use('/api/prestamos', ensureAuth, prestamoRoutes);
-app.use('/api/devoluciones', ensureAuth, devolucionRoutes);
 app.use('/api/iglesias', ensureAuth, iglesiasRoutes); 
+app.use('/api/personas', ensureAuth, personaRoutes);
 app.use('/api/proveedores', ensureAuth, proveedoresRoutes);
 app.use('/api/categorias', ensureAuth, categoriaRoutes); 
+app.use('/api/items', ensureAuth, itemRoutes);
+app.use('/api/eventos', ensureAuth, eventoRoutes);
+app.use('/api/prestamos', ensureAuth, prestamoRoutes);
+app.use('/api/devoluciones', ensureAuth, devolucionRoutes);
+app.use('/api/mantenimientos', ensureAuth, mantenimientoRoutes); 
+
 
 // Home protegido
 app.get('/home', ensureAuth, (req, res) => {
@@ -127,6 +129,16 @@ app.get('/items', ensureAuth, (req, res) => {
     res.render('items', {
         layout: 'layout',
         titulo: "Gestión de Items",
+        nombreCompleto: req.session.nombreCompleto,
+        rol: req.session.rol
+    });
+});
+
+// Vista de eventos
+app.get('/eventos', ensureAuth, (req, res) =>{
+    res.render('eventos', {
+        layout: 'layout',
+        titulo: "Gestión de Eventos",
         nombreCompleto: req.session.nombreCompleto,
         rol: req.session.rol
     });

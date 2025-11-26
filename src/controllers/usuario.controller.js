@@ -111,7 +111,7 @@ const actualizarUsuario = async (req, res) => {
     }
 };
 
-// Eliminar usuario (borrado físico)
+// Eliminar usuario 
 const eliminarUsuario = async (req, res) => {
     try {
         const { id } = req.params;

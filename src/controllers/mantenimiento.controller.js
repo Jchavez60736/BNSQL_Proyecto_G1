@@ -105,16 +105,12 @@ const actualizarMantenimiento = async (req, res) => {
     }
 };
 
-// "Eliminar" mantenimiento (borrado lógico → estado = Cancelado)
+// Eliminar mantenimiento 
 const eliminarMantenimiento = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const mantenimiento = await Mantenimiento.findByIdAndUpdate(
-            id,
-            { estado: 'Cancelado' },
-            { new: true }
-        );
+        const mantenimiento = await Mantenimiento.findByIdAndDelete(id);
 
         if (!mantenimiento) {
             return res.status(404).json({
@@ -125,14 +121,14 @@ const eliminarMantenimiento = async (req, res) => {
 
         return res.json({
             ok: true,
-            msg: 'Mantenimiento marcado como Cancelado',
+            msg: 'Mantenimiento eliminado correctamente',
             data: mantenimiento
         });
     } catch (error) {
-        console.error('Error al eliminar (cancelar) mantenimiento:', error);
+        console.error('Error al eliminar mantenimiento:', error);
         return res.status(500).json({
             ok: false,
-            msg: 'Error interno al eliminar (cancelar) el mantenimiento'
+            msg: 'Error interno al eliminar mantenimiento'
         });
     }
 };

@@ -115,16 +115,12 @@ const actualizarPersona = async (req, res) => {
     }
 };
 
-// Eliminar (borrado lógico) – cambiar estado a Inactivo
+// Eliminar 
 const eliminarPersona = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const persona = await Persona.findByIdAndUpdate(
-            id,
-            { estado: 'Inactivo' },
-            { new: true }
-        );
+        const persona = await Persona.findByIdAndDelete(id);
 
         if (!persona) {
             return res.status(404).json({
@@ -135,7 +131,7 @@ const eliminarPersona = async (req, res) => {
 
         return res.json({
             ok: true,
-            msg: 'Persona marcada como Inactiva',
+            msg: 'Persona eliminada correctamente',
             data: persona
         });
     } catch (error) {
