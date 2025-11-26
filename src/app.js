@@ -27,9 +27,9 @@ connectDB();
 console.log('Sirviendo archivos estáticos desde:', path.join(__dirname, '..', 'public'));
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
-// Middlewares de body
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+// Middlewares nativos de Express
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Vistas + layouts
 app.set('view engine', 'ejs');
@@ -51,12 +51,12 @@ app.use(
 app.use(authRoutes);
 
 // APIs protegidas
-app.use('/api/personas',       ensureAuth, personaRoutes);
+app.use('/api/personas', ensureAuth, personaRoutes);
 app.use('/api/mantenimientos', ensureAuth, mantenimientoRoutes); 
-app.use('/api/items',          ensureAuth, itemRoutes);
-app.use('/api/prestamos',      ensureAuth, prestamoRoutes);
-app.use('/api/devoluciones',   ensureAuth, devolucionRoutes);
-app.use('/api/iglesias',       ensureAuth, iglesiasRoutes); 
+app.use('/api/items', ensureAuth, itemRoutes);
+app.use('/api/prestamos', ensureAuth, prestamoRoutes);
+app.use('/api/devoluciones', ensureAuth, devolucionRoutes);
+app.use('/api/iglesias', ensureAuth, iglesiasRoutes); 
 app.use('/api/proveedores', ensureAuth, proveedoresRoutes);
 
 // Home protegido

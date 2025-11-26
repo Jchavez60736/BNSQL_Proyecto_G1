@@ -69,14 +69,14 @@ const usuarioSchema = new mongoose.Schema(
         }
     },
     {
-        collection: 'Usuarios',
+        collection: 'usuarios',
         timestamps: true, // createdAt y updatedAt automáticos
     }
 );
 
 // Índices recomendados
-usuarioSchema.index({ usuario: 1 }, { unique: true });
-usuarioSchema.index({ correo: 1 }, { unique: true });
+//usuarioSchema.index({ usuario: 1 }, { unique: true });
+//usuarioSchema.index({ correo: 1 }, { unique: true });
 
 const Usuario = mongoose.model('Usuario', usuarioSchema);
 

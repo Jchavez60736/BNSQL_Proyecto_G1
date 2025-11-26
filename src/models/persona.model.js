@@ -54,7 +54,7 @@ const personaSchema = new mongoose.Schema(
 );
 
 // Índices para optimizar consultas
-personaSchema.index({ cedula: 1 }, { unique: true });
+//personaSchema.index({ cedula: 1 }, { unique: true });
 personaSchema.index({ iglesiaAsociada: 1 });
 
 const Persona = mongoose.model('Persona', personaSchema);
