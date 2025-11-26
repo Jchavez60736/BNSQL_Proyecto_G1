@@ -73,7 +73,7 @@ const iglesiaSchema = new mongoose.Schema(
         }
     },
     {
-        collection: 'Iglesias',
+        collection: 'iglesias',
         timestamps: true, // agrega createdAt y updatedAt
     }
 );
