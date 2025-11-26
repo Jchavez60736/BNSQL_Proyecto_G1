@@ -1,169 +1,172 @@
-<!-- Breadcrumb -->
-<nav aria-label="breadcrumb" class="mb-4">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="/home">Inicio</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Iglesias</li>
-    </ol>
-</nav>
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- Encabezado -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h2">Gestión de Iglesias</h1>
-    <button class="btn btn-teal" data-bs-toggle="modal" data-bs-target="#modalIglesia">
-        <i class="bi bi-plus-circle"></i> Nueva Iglesia
-    </button>
-</div>
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/home">Inicio</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Iglesias</li>
+        </ol>
+    </nav>
 
-<!-- Tabla -->
-<div class="card shadow-sm">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover" id="tablaIglesias">
-                <thead class="table-light">
-                    <tr>
-                        <th>Nombre de la Iglesia</th>
-                        <th>Dirección</th>
-                        <th>Teléfono</th>
-                        <th>Correo</th>
-                        <th>Pastor Principal</th>
-                        <th>Contacto - Nombre Completo</th>
-                        <th>Contacto - Teléfono</th>
-                        <th>Fecha Registro</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="cuerpoTabla"></tbody>
-            </table>
-        </div>
-
-        <div id="sinDatos" class="alert alert-info text-center mt-3" style="display:none;">
-            No hay iglesias registradas aún.
-        </div>
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">Gestión de Iglesias</h1>
+        <button class="btn btn-teal" data-bs-toggle="modal" data-bs-target="#modalIglesia">
+            <i class="bi bi-plus-circle"></i> Nueva Iglesia
+        </button>
     </div>
-</div>
 
-<!-- Modal Crear/Editar -->
-<div class="modal fade" id="modalIglesia" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-
-            <div class="modal-header">
-                <h5 class="modal-title" id="tituloModal">Nueva Iglesia</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <!-- Tabla -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="tablaIglesias">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nombre de la Iglesia</th>
+                            <th>Dirección</th>
+                            <th>Teléfono</th>
+                            <th>Correo</th>
+                            <th>Pastor Principal</th>
+                            <th>Contacto - Nombre Completo</th>
+                            <th>Contacto - Teléfono</th>
+                            <th>Fecha Registro</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoTabla"></tbody>
+                </table>
             </div>
 
-            <div class="modal-body">
-                <form id="formIglesia">
-
-                    <input type="hidden" id="idIglesia">
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label class="form-label">Nombre de la Iglesia *</label>
-                            <input type="text" class="form-control" id="nombreIglesia" required>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Dirección *</label>
-                            <input type="text" class="form-control" id="direccion" required>
-                        </div>
-                    </div>
-
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Teléfono *</label>
-                            <input type="text" class="form-control" id="telefono" required>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Correo *</label>
-                            <input type="email" class="form-control" id="correo" required>
-                        </div>
-                    </div>
-
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Pastor Principal *</label>
-                            <input type="text" class="form-control" id="pastorPrincipal" required>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Contacto - Nombre Completo *</label>
-                            <input type="text" class="form-control" id="contactoNombreCompleto" required>
-                        </div>
-                    </div>
-
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Contacto - Teléfono *</label>
-                            <input type="text" class="form-control" id="contactoTelefono" required>
-                        </div>
-                    </div>
-
-                </form>
-            </div>
-
-            <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button class="btn btn-teal" id="btnGuardar">Guardar</button>
+            <div id="sinDatos" class="alert alert-info text-center mt-3" style="display:none;">
+                No hay iglesias registradas aún.
             </div>
         </div>
     </div>
-</div>
 
-<!-- Modal Detalles -->
-<div class="modal fade" id="modalDetalles" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
+    <!-- Modal Crear/Editar -->
+    <div class="modal fade" id="modalIglesia" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
 
-            <div class="modal-header">
-                <h5 class="modal-title">Detalles de la Iglesia</h5>
-                <button class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tituloModal">Nueva Iglesia</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form id="formIglesia">
+
+                        <input type="hidden" id="idIglesia">
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Nombre de la Iglesia *</label>
+                                <input type="text" class="form-control" id="nombreIglesia" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Dirección *</label>
+                                <input type="text" class="form-control" id="direccion" required>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Teléfono *</label>
+                                <input type="text" class="form-control" id="telefono" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Correo *</label>
+                                <input type="email" class="form-control" id="correo" required>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Pastor Principal *</label>
+                                <input type="text" class="form-control" id="pastorPrincipal" required>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label">Contacto - Nombre Completo *</label>
+                                <input type="text" class="form-control" id="contactoNombreCompleto" required>
+                            </div>
+                        </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Contacto - Teléfono *</label>
+                                <input type="text" class="form-control" id="contactoTelefono" required>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-teal" id="btnGuardar">Guardar</button>
+                </div>
             </div>
-
-            <div class="modal-body">
-                <div id="detallesContent"></div>
-            </div>
-
         </div>
     </div>
-</div>
 
-<script>
-    const modalIglesia = new bootstrap.Modal(document.getElementById('modalIglesia'));
-    const modalDetalles = new bootstrap.Modal(document.getElementById('modalDetalles'));
+    <!-- Modal Detalles -->
+    <div class="modal fade" id="modalDetalles" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
 
-    document.getElementById('btnGuardar').addEventListener('click', guardarIglesia);
+                <div class="modal-header">
+                    <h5 class="modal-title">Detalles de la Iglesia</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
 
-    document.getElementById('modalIglesia').addEventListener('hidden.bs.modal', () => {
-        document.getElementById('formIglesia').reset();
-        document.getElementById('idIglesia').value = "";
-        document.getElementById('tituloModal').innerText = "Nueva Iglesia";
-    });
+                <div class="modal-body">
+                    <div id="detallesContent"></div>
+                </div>
 
-    cargarIglesias();
+            </div>
+        </div>
+    </div>
 
-    async function cargarIglesias() {
-        const res = await fetch('/api/iglesias');
-        const datos = await res.json();
+    <script>
+        const modalIglesia = new bootstrap.Modal(document.getElementById('modalIglesia'));
+        const modalDetalles = new bootstrap.Modal(document.getElementById('modalDetalles'));
 
-        const cuerpo = document.getElementById('cuerpoTabla');
-        const sinDatos = document.getElementById('sinDatos');
+        document.getElementById('btnGuardar').addEventListener('click', guardarIglesia);
 
-        cuerpo.innerHTML = "";
+        document.getElementById('modalIglesia').addEventListener('hidden.bs.modal', () => {
+            document.getElementById('formIglesia').reset();
+            document.getElementById('idIglesia').value = "";
+            document.getElementById('tituloModal').innerText = "Nueva Iglesia";
+        });
 
-        if (!datos.ok || datos.data.length === 0) {
-            sinDatos.style.display = "block";
-            return;
-        }
+        cargarIglesias();
 
-        sinDatos.style.display = "none";
+        async function cargarIglesias() {
+            const res = await fetch('/api/iglesias');
+            const datos = await res.json();
 
-        datos.data.forEach(i => {
-            const fecha = new Date(i.fechaRegistro).toLocaleDateString();
+            const cuerpo = document.getElementById('cuerpoTabla');
+            const sinDatos = document.getElementById('sinDatos');
 
-            const fila = document.createElement('tr');
-            fila.innerHTML = `
+            cuerpo.innerHTML = "";
+
+            if (!datos.ok || datos.data.length === 0) {
+                sinDatos.style.display = "block";
+                return;
+            }
+
+            sinDatos.style.display = "none";
+
+            datos.data.forEach(i => {
+                const fecha = new Date(i.fechaRegistro).toLocaleDateString();
+
+                const fila = document.createElement('tr');
+                fila.innerHTML = `
                 <td>${i.nombreIglesia}</td>
                 <td>${i.direccion}</td>
                 <td>${i.telefono}</td>
@@ -185,65 +188,65 @@
                     </button>
                 </td>
             `;
-            cuerpo.appendChild(fila);
-        });
-    }
-
-    async function guardarIglesia() {
-        const id = document.getElementById('idIglesia').value;
-
-        const datos = {
-            nombreIglesia: document.getElementById('nombreIglesia').value,
-            direccion: document.getElementById('direccion').value,
-            telefono: document.getElementById('telefono').value,
-            correo: document.getElementById('correo').value,
-            pastorPrincipal: document.getElementById('pastorPrincipal').value,
-            contactoNombreCompleto: document.getElementById('contactoNombreCompleto').value,
-            contactoTelefono: document.getElementById('contactoTelefono').value
-        };
-
-        const res = await fetch('/api/iglesias' + (id ? '/' + id : ''), {
-            method: id ? "PUT" : "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(datos)
-        });
-
-        const data = await res.json();
-
-        if (data.ok) {
-            modalIglesia.hide();
-            cargarIglesias();
-        } else {
-            alert(data.msg);
+                cuerpo.appendChild(fila);
+            });
         }
-    }
 
-    async function editarIglesia(id) {
-        const res = await fetch('/api/iglesias/' + id);
-        const data = await res.json();
+        async function guardarIglesia() {
+            const id = document.getElementById('idIglesia').value;
 
-        const i = data.data;
+            const datos = {
+                nombreIglesia: document.getElementById('nombreIglesia').value,
+                direccion: document.getElementById('direccion').value,
+                telefono: document.getElementById('telefono').value,
+                correo: document.getElementById('correo').value,
+                pastorPrincipal: document.getElementById('pastorPrincipal').value,
+                contactoNombreCompleto: document.getElementById('contactoNombreCompleto').value,
+                contactoTelefono: document.getElementById('contactoTelefono').value
+            };
 
-        document.getElementById('idIglesia').value = i._id;
-        document.getElementById('nombreIglesia').value = i.nombreIglesia;
-        document.getElementById('direccion').value = i.direccion;
-        document.getElementById('telefono').value = i.telefono;
-        document.getElementById('correo').value = i.correo;
-        document.getElementById('pastorPrincipal').value = i.pastorPrincipal;
-        document.getElementById('contactoNombreCompleto').value = i.contactoNombreCompleto;
-        document.getElementById('contactoTelefono').value = i.contactoTelefono;
+            const res = await fetch('/api/iglesias' + (id ? '/' + id : ''), {
+                method: id ? "PUT" : "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(datos)
+            });
 
-        document.getElementById('tituloModal').innerText = "Editar Iglesia";
+            const data = await res.json();
 
-        modalIglesia.show();
-    }
+            if (data.ok) {
+                modalIglesia.hide();
+                cargarIglesias();
+            } else {
+                alert(data.msg);
+            }
+        }
 
-    async function verDetalles(id) {
-        const res = await fetch('/api/iglesias/' + id);
-        const data = await res.json();
-        const i = data.data;
+        async function editarIglesia(id) {
+            const res = await fetch('/api/iglesias/' + id);
+            const data = await res.json();
 
-        document.getElementById('detallesContent').innerHTML = `
+            const i = data.data;
+
+            document.getElementById('idIglesia').value = i._id;
+            document.getElementById('nombreIglesia').value = i.nombreIglesia;
+            document.getElementById('direccion').value = i.direccion;
+            document.getElementById('telefono').value = i.telefono;
+            document.getElementById('correo').value = i.correo;
+            document.getElementById('pastorPrincipal').value = i.pastorPrincipal;
+            document.getElementById('contactoNombreCompleto').value = i.contactoNombreCompleto;
+            document.getElementById('contactoTelefono').value = i.contactoTelefono;
+
+            document.getElementById('tituloModal').innerText = "Editar Iglesia";
+
+            modalIglesia.show();
+        }
+
+        async function verDetalles(id) {
+            const res = await fetch('/api/iglesias/' + id);
+            const data = await res.json();
+            const i = data.data;
+
+            document.getElementById('detallesContent').innerHTML = `
             <p><strong>Nombre:</strong> ${i.nombreIglesia}</p>
             <p><strong>Dirección:</strong> ${i.direccion}</p>
             <p><strong>Correo:</strong> ${i.correo}</p>
@@ -253,19 +256,20 @@
             <p><strong>Fecha Registro:</strong> ${new Date(i.fechaRegistro).toLocaleString()}</p>
         `;
 
-        modalDetalles.show();
-    }
-
-    async function eliminarIglesia(id) {
-        if (!confirm("¿Seguro que deseas eliminar esta iglesia?")) return;
-
-        const res = await fetch('/api/iglesias/' + id, { method: "DELETE" });
-        const data = await res.json();
-
-        if (data.ok) {
-            cargarIglesias();
-        } else {
-            alert(data.msg);
+            modalDetalles.show();
         }
-    }
-</script>
+
+        async function eliminarIglesia(id) {
+            if (!confirm("¿Seguro que deseas eliminar esta iglesia?")) return;
+
+            const res = await fetch('/api/iglesias/' + id, { method: "DELETE" });
+            const data = await res.json();
+
+            if (data.ok) {
+                cargarIglesias();
+            } else {
+                alert(data.msg);
+            }
+        }
+    </script>
+</body>

@@ -24,7 +24,7 @@ router.get('/:id', obtenerItemPorId);
 // Actualizar un ítem
 router.put('/:id', actualizarItem);
 
-// Borrado lógico (estadoActual = 'De baja')
+// Borrado lógico (estadoActual = 'Inactivo')
 router.delete('/:id', eliminarItem);
 
 module.exports = router;

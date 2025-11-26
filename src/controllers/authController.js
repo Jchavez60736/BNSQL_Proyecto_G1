@@ -1,6 +1,6 @@
 // src/controllers/authController.js
 // Ejemplo simplificado
-const Usuario = require('../models/User');
+const Usuario = require('../models/usuario.model');
 
 exports.renderLogin = (req, res) => {
     res.render('login', {

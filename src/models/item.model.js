@@ -19,14 +19,10 @@ const itemSchema = new mongoose.Schema(
             type: String,
             trim: true
         },
-        estadoActual: {
+        estado: {
             type: String,
-            enum: ['Disponible', 'En uso', 'En mantenimiento', 'De baja'],
-            default: 'Disponible'
-        },
-        fechaRegistro: {
-            type: Date,
-            default: Date.now
+            enum: ['Activo', 'En Mantenimiento', 'Inactivo'],
+            default: 'Activo'
         }
     },
     {
