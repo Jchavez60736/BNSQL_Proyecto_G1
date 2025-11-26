@@ -15,6 +15,8 @@ const prestamoRoutes = require('./routes/prestamo.routes');
 const devolucionRoutes = require('./routes/devolucion.routes');
 const iglesiasRoutes = require('./routes/iglesias.routes');
 const proveedoresRoutes = require('./routes/proveedores.routes');
+const categoriaRoutes = require('./routes/categoria.routes');
+
 
 const expressLayouts = require('express-ejs-layouts');
 
@@ -58,6 +60,7 @@ app.use('/api/prestamos', ensureAuth, prestamoRoutes);
 app.use('/api/devoluciones', ensureAuth, devolucionRoutes);
 app.use('/api/iglesias', ensureAuth, iglesiasRoutes); 
 app.use('/api/proveedores', ensureAuth, proveedoresRoutes);
+app.use('/api/categorias', ensureAuth, categoriaRoutes); 
 
 // Home protegido
 app.get('/home', ensureAuth, (req, res) => {
@@ -89,6 +92,16 @@ app.get('/usuarios', ensureAuth, (req, res) =>{
     });
 });
 
+// Vista de iglesias
+app.get('/iglesias', ensureAuth, (req, res) =>{
+    res.render('iglesias', {
+        layout: 'layout',
+        titulo: "Gestión de Iglesias",
+        nombreCompleto: req.session.nombreCompleto,
+        rol: req.session.rol
+    });
+});
+
 // Vista de personas
 app.get('/personas', ensureAuth, (req, res) =>{
     res.render('personas', {
@@ -99,21 +112,21 @@ app.get('/personas', ensureAuth, (req, res) =>{
     });
 });
 
-// Vista de mantenimientos
-app.get('/mantenimientos', ensureAuth, (req, res) =>{
-    res.render('mantenimientos', {
+// Vista de proveedores
+app.get('/proveedores', ensureAuth, (req, res) => {
+    res.render('proveedores', {
         layout: 'layout',
-        titulo: "Gestión de Mantenimientos",
+        titulo: "Gestión de Proveedores",
         nombreCompleto: req.session.nombreCompleto,
         rol: req.session.rol
     });
 });
 
-// Vista de devoluciones
-app.get('/devoluciones', ensureAuth, (req, res) =>{
-    res.render('devoluciones', {
+// Vista de items
+app.get('/items', ensureAuth, (req, res) => {
+    res.render('items', {
         layout: 'layout',
-        titulo: "Gestión de Devoluciones",
+        titulo: "Gestión de Items",
         nombreCompleto: req.session.nombreCompleto,
         rol: req.session.rol
     });
@@ -129,24 +142,26 @@ app.get('/prestamos', ensureAuth, (req, res) =>{
     });
 });
 
-// Vista de iglesias
-app.get('/iglesias', ensureAuth, (req, res) =>{
-    res.render('iglesias', {
+// Vista de devoluciones
+app.get('/devoluciones', ensureAuth, (req, res) =>{
+    res.render('devoluciones', {
         layout: 'layout',
-        titulo: "Gestión de Iglesias",
+        titulo: "Gestión de Devoluciones",
         nombreCompleto: req.session.nombreCompleto,
         rol: req.session.rol
     });
 });
-// Vista de proveedores
-app.get('/proveedores', ensureAuth, (req, res) => {
-    res.render('proveedores', {
+
+// Vista de mantenimientos
+app.get('/mantenimientos', ensureAuth, (req, res) =>{
+    res.render('mantenimientos', {
         layout: 'layout',
-        titulo: "Gestión de Proveedores",
+        titulo: "Gestión de Mantenimientos",
         nombreCompleto: req.session.nombreCompleto,
         rol: req.session.rol
     });
 });
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
