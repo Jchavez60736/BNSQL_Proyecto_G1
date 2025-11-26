@@ -13,6 +13,8 @@ const mantenimientoRoutes = require('./routes/mantenimiento.routes');
 const itemRoutes = require('./routes/item.routes');
 const prestamoRoutes = require('./routes/prestamo.routes');
 const devolucionRoutes = require('./routes/devolucion.routes');
+const iglesiasRoutes = require('./routes/iglesias.routes');
+const proveedoresRoutes = require('./routes/proveedores.routes');
 
 const expressLayouts = require('express-ejs-layouts');
 
@@ -54,6 +56,8 @@ app.use('/api/mantenimientos', ensureAuth, mantenimientoRoutes);
 app.use('/api/items',          ensureAuth, itemRoutes);
 app.use('/api/prestamos',      ensureAuth, prestamoRoutes);
 app.use('/api/devoluciones',   ensureAuth, devolucionRoutes);
+app.use('/api/iglesias',       ensureAuth, iglesiasRoutes); 
+app.use('/api/proveedores', ensureAuth, proveedoresRoutes);
 
 // Home protegido
 app.get('/home', ensureAuth, (req, res) => {
@@ -120,6 +124,25 @@ app.get('/prestamos', ensureAuth, (req, res) =>{
     res.render('prestamos', {
         layout: 'layout',
         titulo: "Gestión de Préstamos",
+        nombreCompleto: req.session.nombreCompleto,
+        rol: req.session.rol
+    });
+});
+
+// Vista de iglesias
+app.get('/iglesias', ensureAuth, (req, res) =>{
+    res.render('iglesias', {
+        layout: 'layout',
+        titulo: "Gestión de Iglesias",
+        nombreCompleto: req.session.nombreCompleto,
+        rol: req.session.rol
+    });
+});
+// Vista de proveedores
+app.get('/proveedores', ensureAuth, (req, res) => {
+    res.render('proveedores', {
+        layout: 'layout',
+        titulo: "Gestión de Proveedores",
         nombreCompleto: req.session.nombreCompleto,
         rol: req.session.rol
     });
