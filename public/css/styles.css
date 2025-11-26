@@ -1,0 +1,129 @@
+/* --------------------------------------------------
+    COLORES BASE
+-------------------------------------------------- */
+:root {
+    --teal-dark: #0c6b4f;
+    --teal: #0f8a65;
+    --teal-light: #15a77c;
+    --sidebar-bg: linear-gradient(180deg, #0f8a65, #0c6b4f);
+}
+
+/* --------------------------------------------------
+    SIDEBAR
+-------------------------------------------------- */
+.sidebar {
+    min-width: 240px;
+    max-width: 250px;
+    background: var(--sidebar-bg);
+    color: #fff;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+}
+
+.sidebar .nav-link {
+    color: #ffffff;
+    padding: 0.65rem 1rem;
+    border-radius: 0.5rem;
+    transition: 0.2s;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Avatar circular */
+.avatar-circle {
+    width: 50px;
+    height: 50px;
+    background-color: rgba(255, 255, 255, 0.25);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.avatar-initial {
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: white;
+}
+
+/* --------------------------------------------------
+    CONTENIDO PRINCIPAL
+-------------------------------------------------- */
+#page-content {
+    margin-left: 250px;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+/* Header */
+header {
+    background: white;
+    border-bottom: 1px solid #ddd;
+}
+
+/* --------------------------------------------------
+    BOTONES
+-------------------------------------------------- */
+.btn-teal {
+    background-color: var(--teal);
+    border-color: var(--teal);
+    color: white;
+}
+
+.btn-teal:hover {
+    background-color: var(--teal-dark);
+    border-color: var(--teal-dark);
+}
+
+.btn-rounded {
+    border-radius: 999px;
+}
+
+/* --------------------------------------------------
+    TABLAS
+-------------------------------------------------- */
+.table thead {
+    background-color: var(--teal);
+    color: white;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* --------------------------------------------------
+    LOGIN
+-------------------------------------------------- */
+.login-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 1rem;
+    border: none;
+    box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.1);
+}
+
+.bg-teal {
+    background-color: var(--teal) !important;
+}
+
+.text-teal {
+    color: var(--teal) !important;
+}
+
+/* Footer */
+footer {
+    background-color: var(--teal-dark);
+    color: white;
+}
+
+/* --------------------------------------------------
+    ESTILOS GENERALES
+-------------------------------------------------- */
+body {
+    font-family: "Segoe UI", sans-serif;
+}
