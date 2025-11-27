@@ -83,11 +83,13 @@
                         <div class="mb-3">
                             <label class="form-label">Iglesia Asociada *</label>
                             <select class="form-control" id="iglesiaAsociada" required></select>
+                            <small class="text-muted" id="infoIglesia"></small>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">Responsable *</label>
                             <select class="form-control" id="responsable" required></select>
+                            <small class="text-muted" id="infoResponsable"></small>
                         </div>
 
                         <div class="mb-3">
@@ -126,6 +128,21 @@
         document.getElementById('modalEvento').addEventListener('hidden.bs.modal', () => {
             document.getElementById('formEvento').reset();
             document.getElementById('idEvento').value = '';
+            // Restaurar selects
+            const selectIgl = document.getElementById('iglesiaAsociada');
+            if (selectIgl) {
+                selectIgl.disabled = false;
+                const primeraIgl = selectIgl.querySelector('option:first-child');
+                if (primeraIgl) primeraIgl.textContent = 'Seleccionar...';
+            }
+            const selectResp = document.getElementById('responsable');
+            if (selectResp) {
+                selectResp.disabled = false;
+                const primeraResp = selectResp.querySelector('option:first-child');
+                if (primeraResp) primeraResp.textContent = 'Seleccionar...';
+            }
+            document.getElementById('infoIglesia').textContent = '';
+            document.getElementById('infoResponsable').textContent = '';
             document.getElementById('tituloModal').textContent = 'Nuevo Evento';
             editando = false;
         });
@@ -250,6 +267,25 @@
                 document.getElementById('responsable').value = ev.responsable ? ev.responsable._id : '';
                 document.getElementById('observaciones').value = ev.observaciones;
                 document.getElementById('estado').value = ev.estado;
+
+                // Ajustes para edición: mostrar nombre en la opción por defecto y deshabilitar selects
+                const selectIgl = document.getElementById('iglesiaAsociada');
+                if (selectIgl) {
+                    const primeraIgl = selectIgl.querySelector('option:first-child');
+                    if (primeraIgl) primeraIgl.textContent = ev.iglesiaAsociada ? ev.iglesiaAsociada.nombreIglesia : 'Seleccionar...';
+                    selectIgl.value = ev.iglesiaAsociada ? ev.iglesiaAsociada._id : '';
+                    selectIgl.disabled = true;
+                    document.getElementById('infoIglesia').textContent = ev.iglesiaAsociada ? `(${ev.iglesiaAsociada.nombreIglesia})` : '';
+                }
+
+                const selectResp = document.getElementById('responsable');
+                if (selectResp) {
+                    const primeraResp = selectResp.querySelector('option:first-child');
+                    if (primeraResp) primeraResp.textContent = ev.responsable ? ev.responsable.nombreCompleto : 'Seleccionar...';
+                    selectResp.value = ev.responsable ? ev.responsable._id : '';
+                    selectResp.disabled = true;
+                    document.getElementById('infoResponsable').textContent = ev.responsable ? `(${ev.responsable.nombreCompleto})` : '';
+                }
 
                 editando = true;
                 document.getElementById('tituloModal').textContent = 'Editar Evento';

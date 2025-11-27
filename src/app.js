@@ -1,5 +1,4 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const path = require('path');
@@ -10,13 +9,14 @@ const { ensureAuth } = require('./middlewares/authMiddleware');
 
 const iglesiasRoutes = require('./routes/iglesias.routes');
 const personaRoutes = require('./routes/persona.routes'); 
-const proveedoresRoutes = require('./routes/proveedores.routes');
-const categoriaRoutes = require('./routes/categoria.routes');
+const mantenimientoRoutes = require('./routes/mantenimiento.routes');
+const usuarioRoutes = require('./routes/usuario.routes');
 const itemRoutes = require('./routes/item.routes');
 const eventoRoutes = require('./routes/evento.routes');
 const prestamoRoutes = require('./routes/prestamo.routes');
 const devolucionRoutes = require('./routes/devolucion.routes');
-const mantenimientoRoutes = require('./routes/mantenimiento.routes');
+const categoriaRoutes = require('./routes/categoria.routes');
+const proveedoresRoutes = require('./routes/proveedores.routes');
 
 const expressLayouts = require('express-ejs-layouts');
 
@@ -55,14 +55,14 @@ app.use(authRoutes);
 // APIs protegidas
 app.use('/api/iglesias', ensureAuth, iglesiasRoutes); 
 app.use('/api/personas', ensureAuth, personaRoutes);
+app.use('/api/usuarios', ensureAuth, usuarioRoutes);
 app.use('/api/proveedores', ensureAuth, proveedoresRoutes);
 app.use('/api/categorias', ensureAuth, categoriaRoutes); 
 app.use('/api/items', ensureAuth, itemRoutes);
 app.use('/api/eventos', ensureAuth, eventoRoutes);
 app.use('/api/prestamos', ensureAuth, prestamoRoutes);
 app.use('/api/devoluciones', ensureAuth, devolucionRoutes);
-app.use('/api/mantenimientos', ensureAuth, mantenimientoRoutes); 
-
+app.use('/api/mantenimientos', ensureAuth, mantenimientoRoutes);
 
 // Home protegido
 app.get('/home', ensureAuth, (req, res) => {
@@ -173,7 +173,6 @@ app.get('/mantenimientos', ensureAuth, (req, res) =>{
         rol: req.session.rol
     });
 });
-
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
