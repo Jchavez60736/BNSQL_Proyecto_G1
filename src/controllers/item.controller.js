@@ -26,13 +26,7 @@ const crearItem = async (req, res) => {
 // Obtener todos los ítems
 const obtenerItems = async (req, res) => {
     try {
-        // Filtrado por estadoActual 
-        const { estado } = req.query;
-        const filtro = estado ? { estadoActual: estado } : {};
-
-        const items = await Item
-            .find() // .find(filtro)
-            .sort({ nombreItem: 1 });
+        const items = await Item.find();
 
         return res.json({
             ok: true,
@@ -107,16 +101,11 @@ const actualizarItem = async (req, res) => {
     }
 };
 
-// "Eliminar" ítem → borrado lógico (estadoActual = 'De baja')
+// Eliminar ítem
 const eliminarItem = async (req, res) => {
     try {
         const { id } = req.params;
-
-        const item = await Item.findByIdAndUpdate(
-            id,
-            { estadoActual: 'De baja' },
-            { new: true }
-        );
+        const item = await Item.findByIdAndDelete(id);
 
         if (!item) {
             return res.status(404).json({
@@ -127,14 +116,14 @@ const eliminarItem = async (req, res) => {
 
         return res.json({
             ok: true,
-            msg: 'Ítem marcado como De baja',
+            msg: 'Ítem eliminado correctamente',
             data: item
         });
     } catch (error) {
-        console.error('Error al eliminar (dar de baja) ítem:', error);
+        console.error('Error al eliminar ítem:', error);
         return res.status(500).json({
             ok: false,
-            msg: 'Error interno al eliminar (dar de baja) el ítem'
+            msg: 'Error interno al eliminar el ítem'
         });
     }
 };

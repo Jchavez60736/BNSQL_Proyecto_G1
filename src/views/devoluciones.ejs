@@ -1,0 +1,311 @@
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/home">Inicio</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Devoluciones</li>
+        </ol>
+    </nav>
+
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">Gestión de Devoluciones</h1>
+        <button class="btn btn-teal" data-bs-toggle="modal" data-bs-target="#modalProveedor">
+            <i class="bi bi-plus-circle"></i> Registrar Devolución
+        </button>
+    </div>
+
+    <!-- Tabla -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="tablaProveedores">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nombre Proveedor</th>
+                            <th>Persona Contacto</th>
+                            <th>Teléfono</th>
+                            <th>Correo</th>
+                            <th>Dirección</th>
+                            <th>Observaciones</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoTabla"></tbody>
+                </table>
+            </div>
+
+            <div id="sinDatos" class="alert alert-info text-center mt-3" style="display:none;">
+                No hay devoluciones registradas aún.
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Crear/Editar Proveedor -->
+    <div class="modal fade" id="modalProveedor" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tituloModal">Nuevo Proveedor</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form id="formProveedor">
+                        <input type="hidden" id="idProveedor">
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nombre del Proveedor *</label>
+                                <input type="text" class="form-control" id="nombreProveedor"
+                                    placeholder="Ej: Suministros ABC" required>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Persona Contacto *</label>
+                                <input type="text" class="form-control" id="personaContacto"
+                                    placeholder="Nombre de la persona de contacto" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Teléfono *</label>
+                                <input type="text" class="form-control" id="telefono" maxlength="8"
+                                    placeholder="xxxxxxxx" required>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Correo *</label>
+                                <input type="email" class="form-control" id="correo" placeholder="proveedor@dominio.com"
+                                    required>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Dirección *</label>
+                                <input type="text" class="form-control" id="direccion" placeholder="Dirección física"
+                                    required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Observaciones</label>
+                            <textarea class="form-control" id="observaciones" rows="3"
+                                placeholder="Notas u observaciones (opcional)"></textarea>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-teal" id="btnGuardar">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Detalles -->
+    <div class="modal fade" id="modalDetalles" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detalles del Proveedor</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div id="detallesContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const modalProveedor = new bootstrap.Modal(document.getElementById('modalProveedor'));
+        const modalDetalles = new bootstrap.Modal(document.getElementById('modalDetalles'));
+
+        document.getElementById('btnGuardar').addEventListener('click', guardarProveedor);
+
+        // Limpiar modal al cerrarse
+        document.getElementById('modalProveedor').addEventListener('hidden.bs.modal', () => {
+            document.getElementById('formProveedor').reset();
+            document.getElementById('idProveedor').value = "";
+            document.getElementById('tituloModal').innerText = "Nuevo Proveedor";
+        });
+
+        // Cargar la lista al iniciar
+        cargarProveedores();
+
+        async function cargarProveedores() {
+            try {
+                const res = await fetch('/api/proveedores');
+                const datos = await res.json();
+
+                const cuerpo = document.getElementById('cuerpoTabla');
+                const sinDatos = document.getElementById('sinDatos');
+
+                cuerpo.innerHTML = "";
+
+                if (!datos.ok || !Array.isArray(datos.data) || datos.data.length === 0) {
+                    sinDatos.style.display = "block";
+                    return;
+                }
+
+                sinDatos.style.display = "none";
+
+                datos.data.forEach(p => {
+                    const direccionCorta = p.direccion ? (p.direccion.length > 60 ? p.direccion.slice(0, 57) + '...' : p.direccion) : '';
+                    const observacionesCorta = p.observaciones ? (p.observaciones.length > 50 ? p.observaciones.slice(0, 47) + '...' : p.observaciones) : '';
+
+                    const fila = document.createElement('tr');
+                    fila.innerHTML = `
+                    <td>${escapeHtml(p.nombreProveedor)}</td>
+                    <td>${escapeHtml(p.personaContacto)}</td>
+                    <td>${escapeHtml(p.telefono)}</td>
+                    <td>${escapeHtml(p.correo)}</td>
+                    <td title="${escapeHtml(p.direccion)}">${escapeHtml(direccionCorta)}</td>
+                    <td title="${escapeHtml(p.observaciones)}">${escapeHtml(observacionesCorta)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-info" onclick="verDetalles('${p._id}')">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-warning" onclick="editarProveedor('${p._id}')">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="eliminarProveedor('${p._id}')">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+                    cuerpo.appendChild(fila);
+                });
+            } catch (error) {
+                console.error('Error al cargar proveedores:', error);
+            }
+        }
+
+        async function guardarProveedor() {
+            const id = document.getElementById('idProveedor').value;
+
+            const datos = {
+                nombreProveedor: document.getElementById('nombreProveedor').value.trim(),
+                personaContacto: document.getElementById('personaContacto').value.trim(),
+                telefono: document.getElementById('telefono').value.trim(),
+                correo: document.getElementById('correo').value.trim(),
+                direccion: document.getElementById('direccion').value.trim(),
+                observaciones: document.getElementById('observaciones').value.trim()
+            };
+
+            if (!datos.nombreProveedor || !datos.personaContacto || !datos.telefono || !datos.correo || !datos.direccion) {
+                alert('Por favor complete los campos obligatorios (*)');
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/proveedores' + (id ? '/' + id : ''), {
+                    method: id ? 'PUT' : 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                });
+
+                const resultado = await res.json();
+
+                if (resultado.ok) {
+                    modalProveedor.hide();
+                    cargarProveedores();
+                } else {
+                    alert(resultado.msg || 'Ocurrió un error');
+                }
+            } catch (error) {
+                console.error('Error al guardar proveedor:', error);
+                alert('Error al guardar el proveedor');
+            }
+        }
+
+        async function editarProveedor(id) {
+            try {
+                const res = await fetch('/api/proveedores/' + id);
+                const data = await res.json();
+
+                if (!data.ok) {
+                    alert(data.msg || 'Proveedor no encontrado');
+                    return;
+                }
+
+                const p = data.data;
+
+                document.getElementById('idProveedor').value = p._id;
+                document.getElementById('nombreProveedor').value = p.nombreProveedor || '';
+                document.getElementById('personaContacto').value = p.personaContacto || '';
+                document.getElementById('telefono').value = p.telefono || '';
+                document.getElementById('correo').value = p.correo || '';
+                document.getElementById('direccion').value = p.direccion || '';
+                document.getElementById('observaciones').value = p.observaciones || '';
+
+                document.getElementById('tituloModal').innerText = "Editar Proveedor";
+                modalProveedor.show();
+            } catch (error) {
+                console.error('Error al obtener proveedor:', error);
+                alert('Error al obtener datos del proveedor');
+            }
+        }
+
+        async function verDetalles(id) {
+            try {
+                const res = await fetch('/api/proveedores/' + id);
+                const data = await res.json();
+
+                if (!data.ok) {
+                    alert(data.msg || 'Proveedor no encontrado');
+                    return;
+                }
+
+                const p = data.data;
+
+                document.getElementById('detallesContent').innerHTML = `
+                <p><strong>Nombre del Proveedor:</strong> ${escapeHtml(p.nombreProveedor)}</p>
+                <p><strong>Persona Contacto:</strong> ${escapeHtml(p.personaContacto)}</p>
+                <p><strong>Teléfono:</strong> ${escapeHtml(p.telefono)}</p>
+                <p><strong>Correo:</strong> ${escapeHtml(p.correo)}</p>
+                <p><strong>Dirección:</strong> ${escapeHtml(p.direccion)}</p>
+                <p><strong>Observaciones:</strong> ${escapeHtml(p.observaciones || '-')}</p>
+            `;
+
+                modalDetalles.show();
+            } catch (error) {
+                console.error('Error al obtener detalles:', error);
+                alert('Error al obtener detalles del proveedor');
+            }
+        }
+
+        async function eliminarProveedor(id) {
+            if (!confirm('¿Seguro que deseas eliminar este proveedor?')) return;
+
+            try {
+                const res = await fetch('/api/proveedores/' + id, { method: 'DELETE' });
+                const data = await res.json();
+
+                if (data.ok) {
+                    cargarProveedores();
+                } else {
+                    alert(data.msg || 'No se pudo eliminar');
+                }
+            } catch (error) {
+                console.error('Error al eliminar proveedor:', error);
+                alert('Error al eliminar el proveedor');
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str && str !== 0) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    </script>
+</body>

@@ -1,0 +1,266 @@
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/home">Inicio</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Personas</li>
+        </ol>
+    </nav>
+
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">Gestión de Personas</h1>
+        <button class="btn btn-teal" data-bs-toggle="modal" data-bs-target="#modalPersona">
+            <i class="bi bi-plus-circle"></i> Nueva Persona
+        </button>
+    </div>
+
+    <!-- Tabla de Personas -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="tablaSociedades">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nombre Completo</th>
+                            <th>Cédula</th>
+                            <th>Teléfono</th>
+                            <th>Correo</th>
+                            <th>Iglesia</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoTabla">
+                        <!-- Las filas se cargarán con JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="sinDatos" class="alert alert-info text-center mt-3">
+                No hay personas registradas aún.
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Crear/Editar Persona -->
+    <div class="modal fade" id="modalPersona" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tituloModal">Nueva Persona</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formularioPersona">
+                        <input type="hidden" id="idPersona">
+
+                        <div class="mb-3">
+                            <label for="nombreCompleto" class="form-label">Nombre Completo *</label>
+                            <input type="text" class="form-control" id="nombreCompleto" required>
+                            <small class="text-danger" id="errorNombre"></small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="cedula" class="form-label">Cédula *</label>
+                            <input type="text" class="form-control" id="cedula" required>
+                            <small class="text-danger" id="errorCedula"></small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="telefono" class="form-label">Teléfono</label>
+                            <input type="tel" class="form-control" id="telefono" placeholder="123-456-7890">
+                            <small class="text-danger" id="errorTelefono"></small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="correo" class="form-label">Correo</label>
+                            <input type="email" class="form-control" id="correo">
+                            <small class="text-danger" id="errorCorreo"></small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="direccion" class="form-label">Dirección</label>
+                            <input type="text" class="form-control" id="direccion">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="iglesiaAsociada" class="form-label">Iglesia Asociada</label>
+                            <input type="text" class="form-control" id="iglesiaAsociada">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="estado" class="form-label">Estado</label>
+                            <select class="form-control" id="estado">
+                                <option value="Activo">Activo</option>
+                                <option value="Inactivo">Inactivo</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-teal" id="btnGuardar">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const modalPersona = new bootstrap.Modal(document.getElementById('modalPersona'));
+        let editando = false;
+
+        // Cargar personas al iniciar
+        cargarPersonas();
+
+        // Evento del botón guardar
+        document.getElementById('btnGuardar').addEventListener('click', guardarPersona);
+
+        // Evento para limpiar modal al cerrar
+        document.getElementById('modalPersona').addEventListener('hidden.bs.modal', () => {
+            document.getElementById('formularioPersona').reset();
+            document.getElementById('idPersona').value = '';
+            document.getElementById('tituloModal').textContent = 'Nueva Persona';
+            editando = false;
+        });
+
+        async function cargarPersonas() {
+            try {
+                const respuesta = await fetch('/api/personas');
+                const datos = await respuesta.json();
+
+                const cuerpoTabla = document.getElementById('cuerpoTabla');
+                const sinDatos = document.getElementById('sinDatos');
+
+                cuerpoTabla.innerHTML = '';
+
+                if (datos.ok && datos.data.length > 0) {
+                    sinDatos.style.display = 'none';
+                    datos.data.forEach(persona => {
+                        const fila = document.createElement('tr');
+                        fila.innerHTML = `
+                        <td><strong>${persona.nombreCompleto}</strong></td>
+                        <td>${persona.cedula}</td>
+                        <td>${persona.telefono || '-'}</td>
+                        <td>${persona.correo || '-'}</td>
+                        <td>${persona.iglesiaAsociada || '-'}</td>
+                        <td>
+                            <span class="badge bg-${persona.estado === 'Activo' ? 'success' : 'danger'}">
+                                ${persona.estado}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-warning" onclick="editarPersona('${persona._id}')">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="eliminarPersona('${persona._id}', '${persona.nombreCompleto}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                        cuerpoTabla.appendChild(fila);
+                    });
+                } else {
+                    sinDatos.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error al cargar personas:', error);
+            }
+        }
+
+        async function guardarPersona() {
+            const id = document.getElementById('idPersona').value;
+            const nombreCompleto = document.getElementById('nombreCompleto').value;
+            const cedula = document.getElementById('cedula').value;
+            const telefono = document.getElementById('telefono').value;
+            const correo = document.getElementById('correo').value;
+            const direccion = document.getElementById('direccion').value;
+            const iglesiaAsociada = document.getElementById('iglesiaAsociada').value;
+            const estado = document.getElementById('estado').value;
+
+            if (!nombreCompleto || !cedula) {
+                alert('Por favor completa los campos requeridos');
+                return;
+            }
+
+            const datos = {
+                nombreCompleto,
+                cedula,
+                telefono,
+                correo,
+                direccion,
+                iglesiaAsociada,
+                estado
+            };
+
+            try {
+                const url = editando ? `/api/personas/${id}` : '/api/personas';
+                const metodo = editando ? 'PUT' : 'POST';
+
+                const respuesta = await fetch(url, {
+                    method: metodo,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                });
+
+                const resultado = await respuesta.json();
+
+                if (resultado.ok) {
+                    alert(editando ? 'Persona actualizada correctamente' : 'Persona creada correctamente');
+                    modalPersona.hide();
+                    cargarPersonas();
+                } else {
+                    alert('Error: ' + resultado.msg);
+                }
+            } catch (error) {
+                console.error('Error al guardar:', error);
+                alert('Error al guardar la persona');
+            }
+        }
+
+        async function editarPersona(id) {
+            try {
+                const respuesta = await fetch(`/api/personas/${id}`);
+                const datos = await respuesta.json();
+
+                if (datos.ok) {
+                    const persona = datos.data;
+                    document.getElementById('idPersona').value = persona._id;
+                    document.getElementById('nombreCompleto').value = persona.nombreCompleto;
+                    document.getElementById('cedula').value = persona.cedula;
+                    document.getElementById('telefono').value = persona.telefono || '';
+                    document.getElementById('correo').value = persona.correo || '';
+                    document.getElementById('direccion').value = persona.direccion || '';
+                    document.getElementById('iglesiaAsociada').value = persona.iglesiaAsociada || '';
+                    document.getElementById('estado').value = persona.estado;
+                    document.getElementById('tituloModal').textContent = 'Editar Persona';
+                    editando = true;
+                    modalPersona.show();
+                }
+            } catch (error) {
+                console.error('Error al obtener persona:', error);
+            }
+        }
+
+        async function eliminarPersona(id, nombre) {
+            if (!confirm(`¿Estás seguro de que deseas eliminar a ${nombre}?`)) {
+                return;
+            }
+
+            try {
+                const respuesta = await fetch(`/api/personas/${id}`, { method: 'DELETE' });
+                const datos = await respuesta.json();
+
+                if (datos.ok) {
+                    alert('Persona eliminada correctamente');
+                    cargarPersonas();
+                } else {
+                    alert('Error: ' + datos.msg);
+                }
+            } catch (error) {
+                console.error('Error al eliminar:', error);
+            }
+        }
+    </script>
+</body>

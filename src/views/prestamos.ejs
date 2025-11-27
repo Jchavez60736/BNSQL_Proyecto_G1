@@ -1,0 +1,512 @@
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/home">Inicio</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Préstamos</li>
+        </ol>
+    </nav>
+
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">Gestión de Préstamos</h1>
+        <button class="btn btn-teal" data-bs-toggle="modal" data-bs-target="#modalPrestamo">
+            <i class="bi bi-plus-circle"></i> Nuevo Préstamo
+        </button>
+    </div>
+
+    <!-- Tabla de Préstamos -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="tablaPrestamos">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nombre del Préstamo</th>
+                            <th>Fecha Inicio</th>
+                            <th>Fecha Fin</th>
+                            <th>Responsable</th>
+                            <th>Iglesia</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoTabla">
+                        <!-- Las filas se cargarán con JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="sinDatos" class="alert alert-info text-center mt-3">
+                No hay préstamos registrados aún.
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Crear/Editar Préstamo -->
+    <div class="modal fade" id="modalPrestamo" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tituloModal">Nuevo Préstamo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formularioPrestamo">
+                        <input type="hidden" id="idPrestamo">
+
+                        <div class="mb-3">
+                            <label for="nombrePrestamo" class="form-label">Nombre del Préstamo/Actividad *</label>
+                            <input type="text" class="form-control" id="nombrePrestamo" required>
+                            <small class="text-danger" id="errorNombre"></small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <textarea class="form-control" id="descripcion" rows="3"></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="fechaInicio" class="form-label">Fecha Inicio *</label>
+                                    <input type="datetime-local" class="form-control" id="fechaInicio" required>
+                                    <small class="text-danger" id="errorFechaInicio"></small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="fechaFin" class="form-label">Fecha Fin</label>
+                                    <input type="datetime-local" class="form-control" id="fechaFin">
+                                    <small class="text-danger" id="errorFechaFin"></small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="iglesiaAsociada" class="form-label">Iglesia Asociada *</label>
+                                    <input type="text" class="form-control" id="iglesiaAsociada" required>
+                                    <small class="text-danger" id="errorIglesia"></small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="responsable" class="form-label">Responsable *</label>
+                                    <input type="text" class="form-control" id="responsable" required>
+                                    <small class="text-danger" id="errorResponsable"></small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="ubicacion" class="form-label">Ubicación</label>
+                            <input type="text" class="form-control" id="ubicacion">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="estadoActual" class="form-label">Estado</label>
+                            <select class="form-control" id="estadoActual">
+                                <option value="Activo">Activo</option>
+                                <option value="Completado">Completado</option>
+                                <option value="Cancelado">Cancelado</option>
+                            </select>
+                        </div>
+
+                        <!-- Participantes -->
+                        <div class="mb-4">
+                            <h6 class="mb-3">Participantes</h6>
+                            <div id="participantesContainer">
+                                <div class="participante-item mb-3 p-3 border rounded">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <label class="form-label">Persona *</label>
+                                            <input type="text" class="form-control persona" required>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Rol *</label>
+                                            <input type="text" class="form-control rol" required>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-danger"
+                                        onclick="eliminarParticipante(this)">
+                                        <i class="bi bi-trash"></i> Eliminar
+                                    </button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="agregarParticipante()">
+                                <i class="bi bi-plus"></i> Agregar Participante
+                            </button>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="observaciones" class="form-label">Observaciones</label>
+                            <textarea class="form-control" id="observaciones" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-teal" id="btnGuardar">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalles -->
+    <div class="modal fade" id="modalDetalles" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detalles del Préstamo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="detallesContent">
+                        <!-- Se llenará dinámicamente -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const modalPrestamo = new bootstrap.Modal(document.getElementById('modalPrestamo'));
+        const modalDetalles = new bootstrap.Modal(document.getElementById('modalDetalles'));
+        let editando = false;
+
+        // Cargar préstamos al iniciar
+        cargarPrestamos();
+
+        // Evento del botón guardar
+        document.getElementById('btnGuardar').addEventListener('click', guardarPrestamo);
+
+        // Evento para limpiar modal al cerrar
+        document.getElementById('modalPrestamo').addEventListener('hidden.bs.modal', () => {
+            document.getElementById('formularioPrestamo').reset();
+            document.getElementById('idPrestamo').value = '';
+            document.getElementById('participantesContainer').innerHTML = `
+            <div class="participante-item mb-3 p-3 border rounded">
+                <div class="row">
+                    <div class="col-md-8">
+                        <label class="form-label">Persona *</label>
+                        <input type="text" class="form-control persona" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Rol *</label>
+                        <input type="text" class="form-control rol" required>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-danger" onclick="eliminarParticipante(this)">
+                    <i class="bi bi-trash"></i> Eliminar
+                </button>
+            </div>
+        `;
+            document.getElementById('tituloModal').textContent = 'Nuevo Préstamo';
+            editando = false;
+        });
+
+        function agregarParticipante() {
+            const container = document.getElementById('participantesContainer');
+            const participante = document.createElement('div');
+            participante.className = 'participante-item mb-3 p-3 border rounded';
+            participante.innerHTML = `
+            <div class="row">
+                <div class="col-md-8">
+                    <label class="form-label">Persona *</label>
+                    <input type="text" class="form-control persona" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Rol *</label>
+                    <input type="text" class="form-control rol" required>
+                </div>
+            </div>
+            <button type="button" class="btn btn-sm btn-danger" onclick="eliminarParticipante(this)">
+                <i class="bi bi-trash"></i> Eliminar
+            </button>
+        `;
+            container.appendChild(participante);
+        }
+
+        function eliminarParticipante(btn) {
+            const items = document.querySelectorAll('.participante-item');
+            if (items.length > 1) {
+                btn.closest('.participante-item').remove();
+            } else {
+                alert('Debe tener al menos un participante');
+            }
+        }
+
+        async function cargarPrestamos() {
+            try {
+                const respuesta = await fetch('/api/prestamos');
+                const datos = await respuesta.json();
+
+                const cuerpoTabla = document.getElementById('cuerpoTabla');
+                const sinDatos = document.getElementById('sinDatos');
+
+                cuerpoTabla.innerHTML = '';
+
+                if (datos.ok && datos.data.length > 0) {
+                    sinDatos.style.display = 'none';
+                    datos.data.forEach(prestamo => {
+                        const fechaInicio = new Date(prestamo.fechaInicio).toLocaleDateString();
+                        const fechaFin = prestamo.fechaFin ? new Date(prestamo.fechaFin).toLocaleDateString() : '-';
+
+                        const fila = document.createElement('tr');
+                        fila.innerHTML = `
+                        <td><strong>${prestamo.nombrePrestamo}</strong></td>
+                        <td>${fechaInicio}</td>
+                        <td>${fechaFin}</td>
+                        <td>${prestamo.responsable || '-'}</td>
+                        <td>${prestamo.iglesiaAsociada || '-'}</td>
+                        <td>
+                            <span class="badge bg-${getColorEstado(prestamo.estadoActual)}">
+                                ${prestamo.estadoActual}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="verDetalles('${prestamo._id}')">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-warning" onclick="editarPrestamo('${prestamo._id}')">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="eliminarPrestamo('${prestamo._id}', '${prestamo.nombrePrestamo}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                        cuerpoTabla.appendChild(fila);
+                    });
+                } else {
+                    sinDatos.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error al cargar préstamos:', error);
+            }
+        }
+
+        function getColorEstado(estado) {
+            const colores = {
+                'Activo': 'success',
+                'Completado': 'secondary',
+                'Cancelado': 'danger'
+            };
+            return colores[estado] || 'secondary';
+        }
+
+        async function guardarPrestamo() {
+            const id = document.getElementById('idPrestamo').value;
+            const nombrePrestamo = document.getElementById('nombrePrestamo').value;
+            const descripcion = document.getElementById('descripcion').value;
+            const fechaInicio = document.getElementById('fechaInicio').value;
+            const fechaFin = document.getElementById('fechaFin').value;
+            const iglesiaAsociada = document.getElementById('iglesiaAsociada').value;
+            const responsable = document.getElementById('responsable').value;
+            const ubicacion = document.getElementById('ubicacion').value;
+            const estadoActual = document.getElementById('estadoActual').value;
+            const observaciones = document.getElementById('observaciones').value;
+
+            if (!nombrePrestamo || !fechaInicio || !iglesiaAsociada || !responsable) {
+                alert('Por favor completa todos los campos requeridos');
+                return;
+            }
+
+            // Validar fechas
+            if (fechaFin && new Date(fechaFin) < new Date(fechaInicio)) {
+                alert('La fecha de fin no puede ser anterior a la fecha de inicio');
+                return;
+            }
+
+            // Recopilar participantes
+            const participantes = [];
+            const items = document.querySelectorAll('.participante-item');
+
+            items.forEach(item => {
+                const persona = item.querySelector('.persona').value;
+                const rol = item.querySelector('.rol').value;
+
+                if (persona && rol) {
+                    participantes.push({ persona, rol });
+                }
+            });
+
+            if (participantes.length === 0) {
+                alert('Debe agregar al menos un participante');
+                return;
+            }
+
+            const datos = {
+                nombrePrestamo,
+                descripcion,
+                fechaInicio: new Date(fechaInicio).toISOString(),
+                fechaFin: fechaFin ? new Date(fechaFin).toISOString() : null,
+                iglesiaAsociada,
+                responsable,
+                ubicacion,
+                estadoActual,
+                participantes,
+                observaciones
+            };
+
+            try {
+                const url = editando ? `/api/prestamos/${id}` : '/api/prestamos';
+                const metodo = editando ? 'PUT' : 'POST';
+
+                const respuesta = await fetch(url, {
+                    method: metodo,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                });
+
+                const resultado = await respuesta.json();
+
+                if (resultado.ok) {
+                    alert(editando ? 'Préstamo actualizado correctamente' : 'Préstamo creado correctamente');
+                    modalPrestamo.hide();
+                    cargarPrestamos();
+                } else {
+                    alert('Error: ' + resultado.msg);
+                }
+            } catch (error) {
+                console.error('Error al guardar:', error);
+                alert('Error al guardar el préstamo');
+            }
+        }
+
+        async function verDetalles(id) {
+            try {
+                const respuesta = await fetch(`/api/prestamos/${id}`);
+                const datos = await respuesta.json();
+
+                if (datos.ok) {
+                    const prestamo = datos.data;
+                    let html = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Nombre:</strong> ${prestamo.nombrePrestamo}</p>
+                            <p><strong>Responsable:</strong> ${prestamo.responsable || '-'}</p>
+                            <p><strong>Iglesia:</strong> ${prestamo.iglesiaAsociada || '-'}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Fecha Inicio:</strong> ${new Date(prestamo.fechaInicio).toLocaleDateString()}</p>
+                            <p><strong>Fecha Fin:</strong> ${prestamo.fechaFin ? new Date(prestamo.fechaFin).toLocaleDateString() : '-'}</p>
+                            <p><strong>Estado:</strong> <span class="badge bg-${getColorEstado(prestamo.estadoActual)}">${prestamo.estadoActual}</span></p>
+                        </div>
+                    </div>
+                    ${prestamo.descripcion ? `<p><strong>Descripción:</strong> ${prestamo.descripcion}</p>` : ''}
+                    ${prestamo.ubicacion ? `<p><strong>Ubicación:</strong> ${prestamo.ubicacion}</p>` : ''}
+                    <h6 class="mt-3">Participantes:</h6>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Persona</th>
+                                <th>Rol</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                    if (prestamo.participantes && prestamo.participantes.length > 0) {
+                        prestamo.participantes.forEach(p => {
+                            html += `
+                            <tr>
+                                <td>${p.persona}</td>
+                                <td>${p.rol}</td>
+                            </tr>
+                        `;
+                        });
+                    }
+
+                    html += `
+                        </tbody>
+                    </table>
+                    ${prestamo.observaciones ? `<p><strong>Observaciones:</strong> ${prestamo.observaciones}</p>` : ''}
+                `;
+
+                    document.getElementById('detallesContent').innerHTML = html;
+                    modalDetalles.show();
+                }
+            } catch (error) {
+                console.error('Error al obtener detalles:', error);
+            }
+        }
+
+        async function editarPrestamo(id) {
+            try {
+                const respuesta = await fetch(`/api/prestamos/${id}`);
+                const datos = await respuesta.json();
+
+                if (datos.ok) {
+                    const prestamo = datos.data;
+                    document.getElementById('idPrestamo').value = prestamo._id;
+                    document.getElementById('nombrePrestamo').value = prestamo.nombrePrestamo;
+                    document.getElementById('descripcion').value = prestamo.descripcion || '';
+                    document.getElementById('fechaInicio').value = new Date(prestamo.fechaInicio).toISOString().slice(0, 16);
+                    document.getElementById('fechaFin').value = prestamo.fechaFin ? new Date(prestamo.fechaFin).toISOString().slice(0, 16) : '';
+                    document.getElementById('iglesiaAsociada').value = prestamo.iglesiaAsociada || '';
+                    document.getElementById('responsable').value = prestamo.responsable || '';
+                    document.getElementById('ubicacion').value = prestamo.ubicacion || '';
+                    document.getElementById('estadoActual').value = prestamo.estadoActual || 'Activo';
+                    document.getElementById('observaciones').value = prestamo.observaciones || '';
+
+                    // Cargar participantes
+                    const container = document.getElementById('participantesContainer');
+                    container.innerHTML = '';
+
+                    if (prestamo.participantes && prestamo.participantes.length > 0) {
+                        prestamo.participantes.forEach(p => {
+                            const participanteDiv = document.createElement('div');
+                            participanteDiv.className = 'participante-item mb-3 p-3 border rounded';
+                            participanteDiv.innerHTML = `
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <label class="form-label">Persona *</label>
+                                    <input type="text" class="form-control persona" value="${p.persona}" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Rol *</label>
+                                    <input type="text" class="form-control rol" value="${p.rol}" required>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-danger" onclick="eliminarParticipante(this)">
+                                <i class="bi bi-trash"></i> Eliminar
+                            </button>
+                        `;
+                            container.appendChild(participanteDiv);
+                        });
+                    }
+
+                    document.getElementById('tituloModal').textContent = 'Editar Préstamo';
+                    editando = true;
+                    modalPrestamo.show();
+                }
+            } catch (error) {
+                console.error('Error al obtener préstamo:', error);
+            }
+        }
+
+        async function eliminarPrestamo(id, nombre) {
+            if (!confirm(`¿Estás seguro de que deseas eliminar el préstamo "${nombre}"?`)) {
+                return;
+            }
+
+            try {
+                const respuesta = await fetch(`/api/prestamos/${id}`, { method: 'DELETE' });
+                const datos = await respuesta.json();
+
+                if (datos.ok) {
+                    alert('Préstamo eliminado correctamente');
+                    cargarPrestamos();
+                } else {
+                    alert('Error: ' + datos.msg);
+                }
+            } catch (error) {
+                console.error('Error al eliminar:', error);
+            }
+        }
+    </script>
+</body>

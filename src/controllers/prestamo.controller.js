@@ -116,16 +116,12 @@ const actualizarPrestamo = async (req, res) => {
     }
 };
 
-// "Eliminar" préstamo → borrado lógico (estadoActual = 'Cancelado')
+// Eliminar préstamo 
 const eliminarPrestamo = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const prestamo = await Prestamo.findByIdAndUpdate(
-            id,
-            { estadoActual: 'Cancelado' },
-            { new: true }
-        );
+        const prestamo = await Prestamo.findByIdAndDelete(id);
 
         if (!prestamo) {
             return res.status(404).json({
@@ -136,14 +132,14 @@ const eliminarPrestamo = async (req, res) => {
 
         return res.json({
             ok: true,
-            msg: 'Préstamo marcado como Cancelado',
+            msg: 'Préstamo eliminado correctamente',
             data: prestamo
         });
     } catch (error) {
-        console.error('Error al eliminar (cancelar) préstamo:', error);
+        console.error('Error al eliminar préstamo:', error);
         return res.status(500).json({
             ok: false,
-            msg: 'Error interno al eliminar (cancelar) el préstamo'
+            msg: 'Error interno al eliminar el préstamo'
         });
     }
 };

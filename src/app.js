@@ -1,5 +1,4 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const path = require('path');
@@ -8,11 +7,15 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const { ensureAuth } = require('./middlewares/authMiddleware');
 
+const iglesiasRoutes = require('./routes/iglesias.routes');
 const personaRoutes = require('./routes/persona.routes'); 
 const mantenimientoRoutes = require('./routes/mantenimiento.routes');
 const itemRoutes = require('./routes/item.routes');
+const eventoRoutes = require('./routes/evento.routes');
 const prestamoRoutes = require('./routes/prestamo.routes');
 const devolucionRoutes = require('./routes/devolucion.routes');
+const categoriaRoutes = require('./routes/categoria.routes');
+const proveedoresRoutes = require('./routes/proveedores.routes');
 
 const expressLayouts = require('express-ejs-layouts');
 
@@ -25,9 +28,9 @@ connectDB();
 console.log('Sirviendo archivos estáticos desde:', path.join(__dirname, '..', 'public'));
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
-// Middlewares de body
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+// Middlewares nativos de Express
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Vistas + layouts
 app.set('view engine', 'ejs');
@@ -49,11 +52,15 @@ app.use(
 app.use(authRoutes);
 
 // APIs protegidas
-app.use('/api/personas',       ensureAuth, personaRoutes);
-app.use('/api/mantenimientos', ensureAuth, mantenimientoRoutes); 
-app.use('/api/items',          ensureAuth, itemRoutes);
-app.use('/api/prestamos',      ensureAuth, prestamoRoutes);
-app.use('/api/devoluciones',   ensureAuth, devolucionRoutes);
+app.use('/api/iglesias', ensureAuth, iglesiasRoutes); 
+app.use('/api/personas', ensureAuth, personaRoutes);
+app.use('/api/proveedores', ensureAuth, proveedoresRoutes);
+app.use('/api/categorias', ensureAuth, categoriaRoutes); 
+app.use('/api/items', ensureAuth, itemRoutes);
+app.use('/api/eventos', ensureAuth, eventoRoutes);
+app.use('/api/prestamos', ensureAuth, prestamoRoutes);
+app.use('/api/devoluciones', ensureAuth, devolucionRoutes);
+app.use('/api/mantenimientos', ensureAuth, mantenimientoRoutes);
 
 // Home protegido
 app.get('/home', ensureAuth, (req, res) => {
@@ -85,6 +92,16 @@ app.get('/usuarios', ensureAuth, (req, res) =>{
     });
 });
 
+// Vista de iglesias
+app.get('/iglesias', ensureAuth, (req, res) =>{
+    res.render('iglesias', {
+        layout: 'layout',
+        titulo: "Gestión de Iglesias",
+        nombreCompleto: req.session.nombreCompleto,
+        rol: req.session.rol
+    });
+});
+
 // Vista de personas
 app.get('/personas', ensureAuth, (req, res) =>{
     res.render('personas', {
@@ -95,11 +112,41 @@ app.get('/personas', ensureAuth, (req, res) =>{
     });
 });
 
-// Vista de mantenimientos
-app.get('/mantenimientos', ensureAuth, (req, res) =>{
-    res.render('mantenimientos', {
+// Vista de proveedores
+app.get('/proveedores', ensureAuth, (req, res) => {
+    res.render('proveedores', {
         layout: 'layout',
-        titulo: "Gestión de Mantenimientos",
+        titulo: "Gestión de Proveedores",
+        nombreCompleto: req.session.nombreCompleto,
+        rol: req.session.rol
+    });
+});
+
+// Vista de items
+app.get('/items', ensureAuth, (req, res) => {
+    res.render('items', {
+        layout: 'layout',
+        titulo: "Gestión de Items",
+        nombreCompleto: req.session.nombreCompleto,
+        rol: req.session.rol
+    });
+});
+
+// Vista de eventos
+app.get('/eventos', ensureAuth, (req, res) =>{
+    res.render('eventos', {
+        layout: 'layout',
+        titulo: "Gestión de Eventos",
+        nombreCompleto: req.session.nombreCompleto,
+        rol: req.session.rol
+    });
+});
+
+// Vista de préstamos
+app.get('/prestamos', ensureAuth, (req, res) =>{
+    res.render('prestamos', {
+        layout: 'layout',
+        titulo: "Gestión de Préstamos",
         nombreCompleto: req.session.nombreCompleto,
         rol: req.session.rol
     });
@@ -115,11 +162,11 @@ app.get('/devoluciones', ensureAuth, (req, res) =>{
     });
 });
 
-// Vista de préstamos
-app.get('/prestamos', ensureAuth, (req, res) =>{
-    res.render('prestamos', {
+// Vista de mantenimientos
+app.get('/mantenimientos', ensureAuth, (req, res) =>{
+    res.render('mantenimientos', {
         layout: 'layout',
-        titulo: "Gestión de Préstamos",
+        titulo: "Gestión de Mantenimientos",
         nombreCompleto: req.session.nombreCompleto,
         rol: req.session.rol
     });
