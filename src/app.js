@@ -10,6 +10,7 @@ const { ensureAuth } = require('./middlewares/authMiddleware');
 const iglesiasRoutes = require('./routes/iglesias.routes');
 const personaRoutes = require('./routes/persona.routes'); 
 const mantenimientoRoutes = require('./routes/mantenimiento.routes');
+const usuarioRoutes = require('./routes/usuario.routes');
 const itemRoutes = require('./routes/item.routes');
 const eventoRoutes = require('./routes/evento.routes');
 const prestamoRoutes = require('./routes/prestamo.routes');
@@ -54,6 +55,7 @@ app.use(authRoutes);
 // APIs protegidas
 app.use('/api/iglesias', ensureAuth, iglesiasRoutes); 
 app.use('/api/personas', ensureAuth, personaRoutes);
+app.use('/api/usuarios', ensureAuth, usuarioRoutes);
 app.use('/api/proveedores', ensureAuth, proveedoresRoutes);
 app.use('/api/categorias', ensureAuth, categoriaRoutes); 
 app.use('/api/items', ensureAuth, itemRoutes);
