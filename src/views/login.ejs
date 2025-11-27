@@ -15,7 +15,12 @@
                     </div>
                     <div class="mb-4 text-start">
                         <label for="contrasena" class="form-label">Contraseña</label>
-                        <input type="password" name="contrasena" id="contrasena" class="form-control" required />
+                        <div class="input-group">
+                            <input type="password" name="contrasena" id="contrasena" class="form-control" required />
+                            <button type="button" class="btn btn-outline-secondary" id="btnTogglePassword" onclick="togglePassword()">
+                                <img src="/svg/eye-closed.svg" alt="Mostrar contraseña" id="imgPassword" width="20" height="20" style="filter: invert(0.5);">
+                            </button>
+                        </div>
                     </div>
                     <button type="submit" class="btn btn-teal w-100">Iniciar Sesión</button>
                 </form>
@@ -23,3 +28,22 @@
         </div>
     </div>
 </div>
+
+<script>
+    function togglePassword() {
+        const inputPassword = document.getElementById('contrasena');
+        const imgPassword = document.getElementById('imgPassword');
+
+        if (inputPassword.type === 'password') {
+            // Mostrar contraseña - cambiar a ojo abierto
+            inputPassword.type = 'text';
+            imgPassword.src = '/svg/eye-open.svg';
+            imgPassword.alt = 'Ocultar contraseña';
+        } else {
+            // Ocultar contraseña - cambiar a ojo cerrado
+            inputPassword.type = 'password';
+            imgPassword.src = '/svg/eye-closed.svg';
+            imgPassword.alt = 'Mostrar contraseña';
+        }
+    }
+</script>
