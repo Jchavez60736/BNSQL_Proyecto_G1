@@ -11,9 +11,7 @@ const itemSchema = new mongoose.Schema(
         categoria: {
             type: String,
             required: [true, 'La categoría del ítem es obligatoria'],
-            trim: true,
-            // si más adelante creamos categorías fijas, podríamos usar enum
-            enum: ['Tecnología', 'Mobiliario', 'Audio/Video', 'Otro']
+            trim: true
         },
         descripcion: {
             type: String,
@@ -27,11 +25,11 @@ const itemSchema = new mongoose.Schema(
     },
     {
         collection: 'items',
-        timestamps: true // createdAt y updatedAt automáticos
+        timestamps: true 
     }
 );
 
-// Índices recomendados
+
 itemSchema.index({ nombreItem: 1 });
 itemSchema.index({ categoria: 1 });
 

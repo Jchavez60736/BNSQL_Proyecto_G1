@@ -1,7 +1,6 @@
 // controllers/item.controller.js
 const Item = require('../models/item.model');
 
-// Crear ítem
 const crearItem = async (req, res) => {
     try {
         const datos = req.body;
@@ -23,10 +22,17 @@ const crearItem = async (req, res) => {
     }
 };
 
-// Obtener todos los ítems
 const obtenerItems = async (req, res) => {
     try {
-        const items = await Item.find();
+        const { categoria } = req.query;
+
+        let filtro = {};
+
+        if (categoria) {
+            filtro.categoria = categoria;
+        }
+
+        const items = await Item.find(filtro);
 
         return res.json({
             ok: true,
@@ -41,7 +47,6 @@ const obtenerItems = async (req, res) => {
     }
 };
 
-// Obtener ítem por ID
 const obtenerItemPorId = async (req, res) => {
     try {
         const { id } = req.params;
@@ -68,7 +73,6 @@ const obtenerItemPorId = async (req, res) => {
     }
 };
 
-// Actualizar ítem
 const actualizarItem = async (req, res) => {
     try {
         const { id } = req.params;
@@ -101,7 +105,6 @@ const actualizarItem = async (req, res) => {
     }
 };
 
-// Eliminar ítem
 const eliminarItem = async (req, res) => {
     try {
         const { id } = req.params;
