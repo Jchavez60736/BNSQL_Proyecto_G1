@@ -221,6 +221,18 @@
             }
         }
 
+        // Copiar las opciones del select #responsable a los selects de participantes
+        function copyResponsableOptionsTo(selectElement) {
+            const resp = document.getElementById('responsable');
+            if (!resp || !selectElement) return;
+            // clone options
+            selectElement.innerHTML = resp.innerHTML;
+        }
+
+        function fillAllParticipantSelects() {
+            document.querySelectorAll('.participante-item .persona').forEach(s => copyResponsableOptionsTo(s));
+        }
+
         // Cargar datos al iniciar
         cargarIglesias();
         cargarPersonas();
@@ -238,7 +250,9 @@
                 <div class="row">
                     <div class="col-md-8">
                         <label class="form-label">Persona *</label>
-                        <input type="text" class="form-control persona" required>
+                        <select class="form-control persona" required>
+                            <option value="">Seleccionar...</option>
+                        </select>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Rol *</label>
@@ -265,6 +279,8 @@
             }
             const infoI = document.getElementById('infoIglesia'); if (infoI) infoI.textContent = '';
             const infoR = document.getElementById('infoResponsable'); if (infoR) infoR.textContent = '';
+            // llenar opciones en selects de participantes
+            fillAllParticipantSelects();
         });
 
         function agregarParticipante() {
@@ -275,7 +291,9 @@
             <div class="row">
                 <div class="col-md-8">
                     <label class="form-label">Persona *</label>
-                    <input type="text" class="form-control persona" required>
+                    <select class="form-control persona" required>
+                        <option value="">Seleccionar...</option>
+                    </select>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Rol *</label>
@@ -287,6 +305,9 @@
             </button>
         `;
             container.appendChild(participante);
+            // fill options from responsable select
+            const selNew = participante.querySelector('.persona');
+            copyResponsableOptionsTo(selNew);
         }
 
         function eliminarParticipante(btn) {
@@ -575,7 +596,9 @@
                             <div class="row">
                                 <div class="col-md-8">
                                     <label class="form-label">Persona *</label>
-                                    <input type="text" class="form-control persona" value="${p.persona}" required>
+                                    <select class="form-control persona" required>
+                                        <option value="">Seleccionar...</option>
+                                    </select>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label">Rol *</label>
@@ -587,6 +610,11 @@
                             </button>
                         `;
                             container.appendChild(participanteDiv);
+                            // populate select options and set selected value
+                            const sel = participanteDiv.querySelector('.persona');
+                            copyResponsableOptionsTo(sel);
+                            const personaId = (p.persona && typeof p.persona === 'object') ? (p.persona._id || '') : (p.persona || '');
+                            if (personaId) sel.value = personaId;
                         });
                     }
 

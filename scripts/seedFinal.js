@@ -105,7 +105,7 @@ const seedData = async () => {
             },
             {
                 nombreItem: 'Piano Digital',
-                categoria: 'Instrumentos',
+                categoria: 'Otro',
                 descripcion: 'Piano digital para eventos',
                 estado: 'Activo'
             }
@@ -119,7 +119,7 @@ const seedData = async () => {
                 nombreCompleto: 'Juan Pérez López',
                 cedula: '12345678',
                 correo: 'juan.perez@example.com',
-                telefono: '555-1001',
+                telefono: '5551001001',
                 direccion: 'Calle Principal 123',
                 iglesiaAsociada: 'Iglesia Central',
                 estado: 'Activo'
@@ -128,7 +128,7 @@ const seedData = async () => {
                 nombreCompleto: 'María García González',
                 cedula: '87654321',
                 correo: 'maria.garcia@example.com',
-                telefono: '555-1002',
+                telefono: '5551001002',
                 direccion: 'Avenida Central 456',
                 iglesiaAsociada: 'Iglesia Norte',
                 estado: 'Activo'
@@ -137,7 +137,7 @@ const seedData = async () => {
                 nombreCompleto: 'Carlos López Martínez',
                 cedula: '11223344',
                 correo: 'carlos.lopez@example.com',
-                telefono: '555-1003',
+                telefono: '5551001003',
                 direccion: 'Calle Secundaria 789',
                 iglesiaAsociada: 'Iglesia Sur',
                 estado: 'Activo'
@@ -146,7 +146,7 @@ const seedData = async () => {
                 nombreCompleto: 'Ana Martínez Rodríguez',
                 cedula: '99887766',
                 correo: 'ana.martinez@example.com',
-                telefono: '555-1004',
+                telefono: '5551001004',
                 direccion: 'Plaza Mayor 321',
                 iglesiaAsociada: 'Iglesia Central',
                 estado: 'Activo'
@@ -216,16 +216,20 @@ const seedData = async () => {
         const eventosData = [
             {
                 nombreEvento: 'Reunión Mensual',
-                fechaEvento: new Date('2024-12-01T10:00:00'),
+                fechaInicio: new Date('2024-12-01T10:00:00'),
+                fechaFin: new Date('2024-12-01T12:00:00'),
                 descripcion: 'Reunión de coordinación mensual',
+                ubicacion: 'Sala de juntas',
                 iglesiaAsociada: iglesias[0]._id,
                 responsable: personas[0]._id,
                 estado: 'Programado'
             },
             {
                 nombreEvento: 'Taller de Música',
-                fechaEvento: new Date('2024-12-05T15:00:00'),
+                fechaInicio: new Date('2024-12-05T15:00:00'),
+                fechaFin: new Date('2024-12-05T18:00:00'),
                 descripcion: 'Taller de capacitación musical',
+                ubicacion: 'Salón de música',
                 iglesiaAsociada: iglesias[1]._id,
                 responsable: personas[1]._id,
                 estado: 'Programado'
@@ -234,26 +238,36 @@ const seedData = async () => {
         const eventos = await Evento.insertMany(eventosData);
         console.log('✓ 2 eventos creados');
 
-        // 8. Crear Préstamos
+        // 8. Crear Préstamos (datos compatibles con el esquema `Prestamo`)
         const prestamosData = [
             {
+                nombrePrestamo: 'Préstamo Proyector Reunión',
+                descripcion: 'Préstamo del proyector principal para reunión mensual',
+                fechaInicio: new Date('2024-11-15T10:00:00'),
+                fechaFin: new Date('2024-11-22T18:00:00'),
+                iglesiaAsociada: iglesias[0]._id,
                 responsable: personas[0]._id,
-                fechaPrestamo: new Date('2024-11-15T10:00:00'),
-                fechaDevolucionEsperada: new Date('2024-11-22T18:00:00'),
-                estado: 'Activo',
+                ubicacion: 'Sala Principal',
+                estadoActual: 'Activo',
                 participantes: [
                     { persona: personas[0]._id, rol: 'Responsable' },
                     { persona: personas[1]._id, rol: 'Asistente' }
-                ]
+                ],
+                observaciones: 'Entregado en buen estado'
             },
             {
+                nombrePrestamo: 'Préstamo Micrófono Taller',
+                descripcion: 'Micrófono inalámbrico para taller de música',
+                fechaInicio: new Date('2024-11-20T14:00:00'),
+                fechaFin: new Date('2024-11-27T18:00:00'),
+                iglesiaAsociada: iglesias[1]._id,
                 responsable: personas[1]._id,
-                fechaPrestamo: new Date('2024-11-20T14:00:00'),
-                fechaDevolucionEsperada: new Date('2024-11-27T18:00:00'),
-                estado: 'Activo',
+                ubicacion: 'Salón de Música',
+                estadoActual: 'Activo',
                 participantes: [
                     { persona: personas[1]._id, rol: 'Responsable' }
-                ]
+                ],
+                observaciones: 'Pendiente devolución'
             }
         ];
         const prestamos = await Prestamo.insertMany(prestamosData);
@@ -279,7 +293,7 @@ const seedData = async () => {
         console.log('✓ 1 devolución creada');
 
         console.log('\n✓✓✓ BASE DE DATOS POBLADA EXITOSAMENTE ✓✓✓\n');
-        console.log('📊 Resumen de datos creados:');
+        console.log(' Resumen de datos creados:');
         console.log('  ├─ 3 Iglesias');
         console.log('  ├─ 4 Categorías');
         console.log('  ├─ 6 Items');
@@ -289,7 +303,7 @@ const seedData = async () => {
         console.log('  ├─ 2 Eventos');
         console.log('  ├─ 2 Préstamos');
         console.log('  └─ 1 Devolución\n');
-        console.log('✅ Conexión a la BD verificada correctamente\n');
+        console.log(' Conexión a la BD verificada correctamente\n');
 
         mongoose.disconnect();
     } catch (error) {
