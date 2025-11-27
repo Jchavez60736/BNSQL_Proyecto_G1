@@ -59,8 +59,11 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="idItem" class="form-label">ID del Ítem *</label>
-                                    <input type="text" class="form-control" id="idItem" required>
+                                    <label for="idItem" class="form-label">Ítem *</label>
+                                    <select class="form-control" id="idItem" required>
+                                        <option value="">Seleccionar ítem...</option>
+                                    </select>
+                                    <small class="text-muted" id="infoItem"></small>
                                     <small class="text-danger" id="errorIdItem"></small>
                                 </div>
                             </div>
@@ -72,7 +75,7 @@
                                         <option value="Preventivo">Preventivo</option>
                                         <option value="Correctivo">Correctivo</option>
                                     </select>
-                                    <small class="text-danger" id="errorTipo"></small>
+                                    <small class="text-danger" id="errorTipoMantenimiento"></small>
                                 </div>
                             </div>
                         </div>
@@ -81,7 +84,7 @@
                             <label for="descripcionProcedimiento" class="form-label">Descripción del Procedimiento
                                 *</label>
                             <textarea class="form-control" id="descripcionProcedimiento" rows="3" required></textarea>
-                            <small class="text-danger" id="errorDescripcion"></small>
+                            <small class="text-danger" id="errorDescripcionProcedimiento"></small>
                         </div>
 
                         <div class="row">
@@ -154,14 +157,108 @@
         document.getElementById('modalMantenimiento').addEventListener('hidden.bs.modal', () => {
             document.getElementById('formularioMantenimiento').reset();
             document.getElementById('idMantenimiento').value = '';
+            document.getElementById('idItem').disabled = false;
+            
+            // Restaurar el texto original de la primera opción
+            const selectItem = document.getElementById('idItem');
+            const primeraOpcion = selectItem.querySelector('option:first-child');
+            primeraOpcion.textContent = 'Seleccionar ítem...';
+            
+            document.getElementById('infoItem').textContent = '';
             document.getElementById('tituloModal').textContent = 'Nuevo Mantenimiento';
             editando = false;
+            limpiarErrores();
         });
+
+        // Cargar items al abrir el modal
+        document.getElementById('modalMantenimiento').addEventListener('show.bs.modal', cargarItems);
+
+        // Cargar items al abrir el modal
+        document.getElementById('modalMantenimiento').addEventListener('show.bs.modal', cargarItems);
+
+        async function cargarItems() {
+            try {
+                const respuesta = await fetch('/api/items');
+                const datos = await respuesta.json();
+
+                const selectItem = document.getElementById('idItem');
+                // Mantener la primera opción
+                const primeraOpcion = selectItem.innerHTML;
+
+                if (datos.ok && datos.data.length > 0) {
+                    selectItem.innerHTML = primeraOpcion;
+                    datos.data.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item._id;
+                        option.textContent = `${item.nombreItem} (${item.categoria})`;
+                        selectItem.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Error al cargar items:', error);
+            }
+        }
+
+        function limpiarErrores() {
+            document.querySelectorAll('.text-danger').forEach(elem => {
+                elem.textContent = '';
+            });
+        }
+
+        function mostrarError(elemento, mensaje) {
+            const errorElem = document.getElementById('error' + elemento.charAt(0).toUpperCase() + elemento.slice(1));
+            if (errorElem) {
+                errorElem.textContent = mensaje;
+            }
+        }
+
+        function validarFormulario() {
+            limpiarErrores();
+            let esValido = true;
+
+            const idItem = document.getElementById('idItem').value;
+            if (!idItem) {
+                mostrarError('idItem', 'Debe seleccionar un ítem');
+                esValido = false;
+            }
+
+            const tipoMantenimiento = document.getElementById('tipoMantenimiento').value;
+            if (!tipoMantenimiento) {
+                mostrarError('tipoMantenimiento', 'Debe seleccionar el tipo');
+                esValido = false;
+            }
+
+            const descripcionProcedimiento = document.getElementById('descripcionProcedimiento').value.trim();
+            if (!descripcionProcedimiento) {
+                mostrarError('descripcionProcedimiento', 'La descripción es obligatoria');
+                esValido = false;
+            } else if (descripcionProcedimiento.length < 5) {
+                mostrarError('descripcionProcedimiento', 'La descripción debe tener al menos 5 caracteres');
+                esValido = false;
+            }
+
+            const fechaInicio = document.getElementById('fechaInicio').value;
+            if (!fechaInicio) {
+                mostrarError('fechaInicio', 'La fecha de inicio es obligatoria');
+                esValido = false;
+            }
+
+            const responsable = document.getElementById('responsable').value.trim();
+            if (!responsable) {
+                mostrarError('responsable', 'El responsable es obligatorio');
+                esValido = false;
+            }
+
+            return esValido;
+        }
 
         async function cargarMantenimientos() {
             try {
+                console.log('Cargando mantenimientos...');
                 const respuesta = await fetch('/api/mantenimientos');
                 const datos = await respuesta.json();
+
+                console.log('Mantenimientos obtenidos:', datos);
 
                 const cuerpoTabla = document.getElementById('cuerpoTabla');
                 const sinDatos = document.getElementById('sinDatos');
@@ -219,21 +316,22 @@
         }
 
         async function guardarMantenimiento() {
+            if (!validarFormulario()) {
+                return;
+            }
+
             const id = document.getElementById('idMantenimiento').value;
             const idItem = document.getElementById('idItem').value;
             const tipoMantenimiento = document.getElementById('tipoMantenimiento').value;
-            const descripcionProcedimiento = document.getElementById('descripcionProcedimiento').value;
+            const descripcionProcedimiento = document.getElementById('descripcionProcedimiento').value.trim();
             const fechaInicio = document.getElementById('fechaInicio').value;
             const fechaFin = document.getElementById('fechaFin').value;
-            const responsable = document.getElementById('responsable').value;
+            const responsable = document.getElementById('responsable').value.trim();
             const estado = document.getElementById('estado').value;
-            const resultado = document.getElementById('resultado').value;
-            const observaciones = document.getElementById('observaciones').value;
+            const resultado = document.getElementById('resultado').value.trim();
+            const observaciones = document.getElementById('observaciones').value.trim();
 
-            if (!idItem || !tipoMantenimiento || !descripcionProcedimiento || !fechaInicio || !responsable) {
-                alert('Por favor completa todos los campos requeridos');
-                return;
-            }
+            console.log('Guardando mantenimiento. Editando:', editando, 'ID:', id);
 
             const datos = {
                 idItem,
@@ -243,13 +341,15 @@
                 fechaFin: fechaFin ? new Date(fechaFin).toISOString() : null,
                 responsable,
                 estado,
-                resultado,
-                observaciones
+                resultado: resultado || undefined,
+                observaciones: observaciones || undefined
             };
 
             try {
                 const url = editando ? `/api/mantenimientos/${id}` : '/api/mantenimientos';
                 const metodo = editando ? 'PUT' : 'POST';
+
+                console.log('Enviando datos a:', url, 'Método:', metodo, 'Datos:', datos);
 
                 const respuesta = await fetch(url, {
                     method: metodo,
@@ -264,23 +364,47 @@
                     modalMantenimiento.hide();
                     cargarMantenimientos();
                 } else {
+                    // Mostrar errores de validación específicos
+                    console.error('Error del servidor:', resultado_resp);
                     alert('Error: ' + resultado_resp.msg);
                 }
             } catch (error) {
                 console.error('Error al guardar:', error);
-                alert('Error al guardar el mantenimiento');
+                alert('Error al guardar el mantenimiento: ' + error.message);
             }
         }
 
         async function editarMantenimiento(id) {
             try {
+                console.log('Editando mantenimiento con ID:', id);
+                
+                // Primero cargar los items para que estén disponibles en el select
+                await cargarItems();
+                
+                // Luego cargar el mantenimiento
                 const respuesta = await fetch(`/api/mantenimientos/${id}`);
                 const datos = await respuesta.json();
 
                 if (datos.ok) {
                     const mantenimiento = datos.data;
                     document.getElementById('idMantenimiento').value = mantenimiento._id;
-                    document.getElementById('idItem').value = mantenimiento.idItem;
+                    
+                    // Asignar el ID correcto del item (puede ser objeto con _id o string)
+                    const idItemValue = typeof mantenimiento.idItem === 'object' ? mantenimiento.idItem._id : mantenimiento.idItem;
+                    const nombreItem = typeof mantenimiento.idItem === 'object' ? mantenimiento.idItem.nombreItem : '';
+                    
+                    console.log('Asignando idItem:', idItemValue, 'Nombre:', nombreItem);
+                    document.getElementById('idItem').value = idItemValue;
+                    
+                    // Cambiar el texto del placeholder/opción por defecto
+                    const selectItem = document.getElementById('idItem');
+                    const primeraOpcion = selectItem.querySelector('option:first-child');
+                    primeraOpcion.textContent = nombreItem ? `${nombreItem}` : 'Seleccionar ítem...';
+                    
+                    // Deshabilitar el select de ítem en edición
+                    document.getElementById('idItem').disabled = true;
+                    document.getElementById('infoItem').textContent = nombreItem ? `(${nombreItem})` : '';
+                    
                     document.getElementById('tipoMantenimiento').value = mantenimiento.tipoMantenimiento;
                     document.getElementById('descripcionProcedimiento').value = mantenimiento.descripcionProcedimiento;
                     document.getElementById('fechaInicio').value = new Date(mantenimiento.fechaInicio).toISOString().slice(0, 16);
@@ -291,10 +415,14 @@
                     document.getElementById('observaciones').value = mantenimiento.observaciones || '';
                     document.getElementById('tituloModal').textContent = 'Editar Mantenimiento';
                     editando = true;
+                    console.log('Mantenimiento cargado:', mantenimiento);
                     modalMantenimiento.show();
+                } else {
+                    alert('Error: ' + datos.msg);
                 }
             } catch (error) {
                 console.error('Error al obtener mantenimiento:', error);
+                alert('Error al cargar el mantenimiento');
             }
         }
 

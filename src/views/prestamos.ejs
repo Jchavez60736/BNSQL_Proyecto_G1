@@ -88,14 +88,20 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="iglesiaAsociada" class="form-label">Iglesia Asociada *</label>
-                                    <input type="text" class="form-control" id="iglesiaAsociada" required>
+                                    <select class="form-control" id="iglesiaAsociada" required>
+                                        <option value="">Seleccionar...</option>
+                                    </select>
+                                    <small class="text-muted" id="infoIglesia"></small>
                                     <small class="text-danger" id="errorIglesia"></small>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="responsable" class="form-label">Responsable *</label>
-                                    <input type="text" class="form-control" id="responsable" required>
+                                    <select class="form-control" id="responsable" required>
+                                        <option value="">Seleccionar...</option>
+                                    </select>
+                                    <small class="text-muted" id="infoResponsable"></small>
                                     <small class="text-danger" id="errorResponsable"></small>
                                 </div>
                             </div>
@@ -177,7 +183,47 @@
         const modalDetalles = new bootstrap.Modal(document.getElementById('modalDetalles'));
         let editando = false;
 
-        // Cargar préstamos al iniciar
+        async function cargarIglesias() {
+            const select = document.getElementById('iglesiaAsociada');
+            if (!select) return;
+            select.innerHTML = '<option value="">Seleccionar...</option>';
+            try {
+                const res = await fetch('/api/iglesias');
+                const payload = await res.json();
+                const data = Array.isArray(payload) ? payload : (payload && payload.data ? payload.data : []);
+                data.forEach(i => {
+                    const opt = document.createElement('option');
+                    opt.value = i._id;
+                    opt.textContent = i.nombreIglesia || i.nombre || i._id;
+                    select.appendChild(opt);
+                });
+            } catch (err) {
+                console.error('Error cargando iglesias', err);
+            }
+        }
+
+        async function cargarPersonas() {
+            const select = document.getElementById('responsable');
+            if (!select) return;
+            select.innerHTML = '<option value="">Seleccionar...</option>';
+            try {
+                const res = await fetch('/api/personas');
+                const payload = await res.json();
+                const data = Array.isArray(payload) ? payload : (payload && payload.data ? payload.data : []);
+                data.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p._id;
+                    opt.textContent = p.nombreCompleto || (p.nombres ? (p.nombres + ' ' + (p.apellidos || '')) : p._id);
+                    select.appendChild(opt);
+                });
+            } catch (err) {
+                console.error('Error cargando personas', err);
+            }
+        }
+
+        // Cargar datos al iniciar
+        cargarIglesias();
+        cargarPersonas();
         cargarPrestamos();
 
         // Evento del botón guardar
@@ -206,6 +252,19 @@
         `;
             document.getElementById('tituloModal').textContent = 'Nuevo Préstamo';
             editando = false;
+            // restore selects and info
+            const iglesia = document.getElementById('iglesiaAsociada');
+            const responsable = document.getElementById('responsable');
+            if (iglesia) {
+                iglesia.disabled = false;
+                if (iglesia.options.length) iglesia.options[0].text = 'Seleccionar...';
+            }
+            if (responsable) {
+                responsable.disabled = false;
+                if (responsable.options.length) responsable.options[0].text = 'Seleccionar...';
+            }
+            const infoI = document.getElementById('infoIglesia'); if (infoI) infoI.textContent = '';
+            const infoR = document.getElementById('infoResponsable'); if (infoR) infoR.textContent = '';
         });
 
         function agregarParticipante() {
@@ -442,16 +501,67 @@
 
                 if (datos.ok) {
                     const prestamo = datos.data;
-                    document.getElementById('idPrestamo').value = prestamo._id;
-                    document.getElementById('nombrePrestamo').value = prestamo.nombrePrestamo;
-                    document.getElementById('descripcion').value = prestamo.descripcion || '';
-                    document.getElementById('fechaInicio').value = new Date(prestamo.fechaInicio).toISOString().slice(0, 16);
-                    document.getElementById('fechaFin').value = prestamo.fechaFin ? new Date(prestamo.fechaFin).toISOString().slice(0, 16) : '';
-                    document.getElementById('iglesiaAsociada').value = prestamo.iglesiaAsociada || '';
-                    document.getElementById('responsable').value = prestamo.responsable || '';
-                    document.getElementById('ubicacion').value = prestamo.ubicacion || '';
-                    document.getElementById('estadoActual').value = prestamo.estadoActual || 'Activo';
-                    document.getElementById('observaciones').value = prestamo.observaciones || '';
+                        // ensure selects populated first
+                        await cargarIglesias();
+                        await cargarPersonas();
+
+                        document.getElementById('idPrestamo').value = prestamo._id;
+                        document.getElementById('nombrePrestamo').value = prestamo.nombrePrestamo;
+                        document.getElementById('descripcion').value = prestamo.descripcion || '';
+                        document.getElementById('fechaInicio').value = new Date(prestamo.fechaInicio).toISOString().slice(0, 16);
+                        document.getElementById('fechaFin').value = prestamo.fechaFin ? new Date(prestamo.fechaFin).toISOString().slice(0, 16) : '';
+
+                        // Iglesia asociada: try to set by id, otherwise show name in first option and disable
+                        const selIglesia = document.getElementById('iglesiaAsociada');
+                        let iglesiaId = '';
+                        let iglesiaName = '';
+                        if (prestamo.iglesiaAsociada && typeof prestamo.iglesiaAsociada === 'object') {
+                            iglesiaId = prestamo.iglesiaAsociada._id || '';
+                            iglesiaName = prestamo.iglesiaAsociada.nombreIglesia || prestamo.iglesiaAsociada.nombre || '';
+                        } else {
+                            iglesiaId = prestamo.iglesiaAsociada || '';
+                            iglesiaName = prestamo.iglesiaAsociada || '';
+                        }
+                        if (selIglesia) {
+                            const exists = Array.from(selIglesia.options).some(o => o.value === iglesiaId);
+                            if (exists) {
+                                selIglesia.value = iglesiaId;
+                            } else {
+                                selIglesia.options[0].text = iglesiaName || 'Seleccionado';
+                                selIglesia.options[0].value = iglesiaId || '';
+                                selIglesia.value = iglesiaId || '';
+                            }
+                            selIglesia.disabled = true;
+                            const infoI = document.getElementById('infoIglesia'); if (infoI) infoI.textContent = iglesiaName;
+                        }
+
+                        // Responsable: similar handling
+                        const selResp = document.getElementById('responsable');
+                        let respId = '';
+                        let respName = '';
+                        if (prestamo.responsable && typeof prestamo.responsable === 'object') {
+                            respId = prestamo.responsable._id || '';
+                            respName = prestamo.responsable.nombreCompleto || (prestamo.responsable.nombres ? (prestamo.responsable.nombres + ' ' + (prestamo.responsable.apellidos || '')) : '');
+                        } else {
+                            respId = prestamo.responsable || '';
+                            respName = prestamo.responsable || '';
+                        }
+                        if (selResp) {
+                            const existsR = Array.from(selResp.options).some(o => o.value === respId);
+                            if (existsR) {
+                                selResp.value = respId;
+                            } else {
+                                selResp.options[0].text = respName || 'Seleccionado';
+                                selResp.options[0].value = respId || '';
+                                selResp.value = respId || '';
+                            }
+                            selResp.disabled = true;
+                            const infoR = document.getElementById('infoResponsable'); if (infoR) infoR.textContent = respName;
+                        }
+
+                        document.getElementById('ubicacion').value = prestamo.ubicacion || '';
+                        document.getElementById('estadoActual').value = prestamo.estadoActual || 'Activo';
+                        document.getElementById('observaciones').value = prestamo.observaciones || '';
 
                     // Cargar participantes
                     const container = document.getElementById('participantesContainer');

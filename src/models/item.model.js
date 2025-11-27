@@ -11,9 +11,9 @@ const itemSchema = new mongoose.Schema(
         categoria: {
             type: String,
             required: [true, 'La categoría del ítem es obligatoria'],
-            trim: true
+            trim: true,
             // si más adelante creamos categorías fijas, podríamos usar enum
-            // enum: ['Tecnología', 'Mobiliario', 'Audio/Video', 'Otro']
+            enum: ['Tecnología', 'Mobiliario', 'Audio/Video', 'Otro']
         },
         descripcion: {
             type: String,
