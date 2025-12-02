@@ -15,7 +15,6 @@
         </button>
     </div>
 
-    <!-- Tabla -->
     <div class="card shadow-sm">
         <div class="card-body">
             <div class="table-responsive">
@@ -41,7 +40,6 @@
         </div>
     </div>
 
-    <!-- Modal Crear/Editar -->
     <div class="modal fade" id="modalEvento" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -128,7 +126,7 @@
         document.getElementById('modalEvento').addEventListener('hidden.bs.modal', () => {
             document.getElementById('formEvento').reset();
             document.getElementById('idEvento').value = '';
-            // Restaurar selects
+            
             const selectIgl = document.getElementById('iglesiaAsociada');
             if (selectIgl) {
                 selectIgl.disabled = false;
@@ -147,7 +145,6 @@
             editando = false;
         });
 
-        // Cargar lista de eventos
         async function cargarEventos() {
             try {
                 const resp = await fetch('/api/eventos');
@@ -196,7 +193,6 @@
             }
         }
 
-        // Guardar o actualizar evento
         async function guardarEvento() {
             const id = document.getElementById('idEvento').value.trim();
             const nombreEvento = document.getElementById('nombreEvento').value.trim();
@@ -241,7 +237,6 @@
             }
         }
 
-        // Editar
         async function editarEvento(id) {
             try {
                 const resp = await fetch(`/api/eventos/${id}`);
@@ -268,7 +263,6 @@
                 document.getElementById('observaciones').value = ev.observaciones;
                 document.getElementById('estado').value = ev.estado;
 
-                // Ajustes para edición: mostrar nombre en la opción por defecto y deshabilitar selects
                 const selectIgl = document.getElementById('iglesiaAsociada');
                 if (selectIgl) {
                     const primeraIgl = selectIgl.querySelector('option:first-child');
@@ -296,7 +290,6 @@
             }
         }
 
-        // Eliminar
         async function eliminarEvento(id, nombre) {
             if (!confirm(`¿Estás seguro de que deseas eliminar ${nombre}?`)) return;
 
@@ -315,7 +308,6 @@
             }
         }
 
-        // Cargar iglesias
         async function cargarIglesias() {
             try {
                 const resp = await fetch('/api/iglesias');
@@ -337,7 +329,6 @@
             }
         }
 
-        // Cargar personas
         async function cargarPersonas() {
             try {
                 const resp = await fetch('/api/personas');
@@ -359,7 +350,6 @@
             }
         }
 
-        // Inicializar selects al abrir modal
         document.getElementById('modalEvento').addEventListener('show.bs.modal', () => {
             cargarIglesias();
             cargarPersonas();

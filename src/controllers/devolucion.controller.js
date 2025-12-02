@@ -1,7 +1,6 @@
 // controllers/devolucion.controller.js
 const Devolucion = require('../models/devolucion.model');
 
-// Crear devolución
 const crearDevolucion = async (req, res) => {
     try {
         const datos = req.body;
@@ -23,7 +22,6 @@ const crearDevolucion = async (req, res) => {
     }
 };
 
-// Obtener todas las devoluciones (con filtros opcionales)
 const obtenerDevoluciones = async (req, res) => {
     try {
         const { prestamo, persona } = req.query;
@@ -55,7 +53,6 @@ const obtenerDevoluciones = async (req, res) => {
     }
 };
 
-// Obtener una devolución por ID
 const obtenerDevolucionPorId = async (req, res) => {
     try {
         const { id } = req.params;
@@ -85,7 +82,6 @@ const obtenerDevolucionPorId = async (req, res) => {
     }
 };
 
-// Actualizar devolución
 const actualizarDevolucion = async (req, res) => {
     try {
         const { id } = req.params;
@@ -118,7 +114,6 @@ const actualizarDevolucion = async (req, res) => {
     }
 };
 
-// Eliminar devolución 
 const eliminarDevolucion = async (req, res) => {
     try {
         const { id } = req.params;

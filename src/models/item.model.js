@@ -9,9 +9,9 @@ const itemSchema = new mongoose.Schema(
             minlength: [3, 'El nombre del ítem debe tener al menos 3 caracteres']
         },
         categoria: {
-            type: String,
-            required: [true, 'La categoría del ítem es obligatoria'],
-            trim: true
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Categoria',
+            required: [true, 'La categoría del ítem es obligatoria']
         },
         descripcion: {
             type: String,

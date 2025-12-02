@@ -136,7 +136,7 @@
                         const fila = document.createElement('tr');
                         fila.innerHTML = `
                             <td><strong>${item.nombreItem}</strong></td>
-                            <td>${item.categoria}</td>
+                            <td>${item.categoria?.nombre || 'Sin categoría'}</td>
                             <td>${item.descripcion}</td>
                             <td>
                                 <span class="badge ${item.estado === 'Activo'
@@ -168,7 +168,7 @@
         async function guardarItem() {
             const id = document.getElementById('idItem').value.trim();
             const nombreItem = document.getElementById('nombreItem').value.trim();
-            const categoria = document.getElementById('categoria').value.trim();
+            const categoria = document.getElementById('categoria').value;
             const descripcion = document.getElementById('descripcion').value.trim();
             const estado = document.getElementById('estado').value;
 
@@ -221,7 +221,7 @@
                 document.getElementById('idItem').value = item._id;
                 document.getElementById('nombreItem').value = item.nombreItem;
                 document.getElementById('descripcion').value = item.descripcion;
-                document.getElementById('categoria').value = item.categoria;
+                document.getElementById('categoria').value = item.categoria?._id;
                 document.getElementById('estado').value = item.estado;
 
                 editando = true;
@@ -259,12 +259,12 @@
                 const datos = await resp.json();
 
                 const select = document.getElementById('categoria');
-                select.innerHTML = ''; // Limpia el select
+                select.innerHTML = ''; 
 
                 if (datos.ok && datos.data.length > 0) {
                     datos.data.forEach(cat => {
                         const option = document.createElement('option');
-                        option.value = cat.nombre;
+                        option.value = cat._id;
                         option.textContent = cat.nombre;
                         select.appendChild(option);
                     });
@@ -291,7 +291,7 @@
                 if (datos.ok && datos.data.length > 0) {
                     datos.data.forEach(cat => {
                         const option = document.createElement('option');
-                        option.value = cat.nombre;
+                        option.value = cat._id;
                         option.textContent = cat.nombre;
                         filtro.appendChild(option);
                     });

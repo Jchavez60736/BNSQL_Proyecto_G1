@@ -32,7 +32,8 @@ const obtenerItems = async (req, res) => {
             filtro.categoria = categoria;
         }
 
-        const items = await Item.find(filtro);
+        const items = await Item.find(filtro)
+            .populate('categoria');
 
         return res.json({
             ok: true,

@@ -1,6 +1,5 @@
 const Persona = require('../models/persona.model');
 
-// Crear persona
 const crearPersona = async (req, res) => {
     try {
         const datos = req.body;
@@ -16,7 +15,6 @@ const crearPersona = async (req, res) => {
     } catch (error) {
         console.error('Error al crear persona:', error);
 
-        // Manejo básico de error de índice único (cedula duplicada)
         if (error.code === 11000 && error.keyPattern && error.keyPattern.cedula) {
             return res.status(400).json({
                 ok: false,
@@ -31,7 +29,6 @@ const crearPersona = async (req, res) => {
     }
 };
 
-// Listar todas las personas
 const obtenerPersonas = async (req, res) => {
     try {
         const personas = await Persona.find().sort({ nombreCompleto: 1 });
@@ -48,7 +45,6 @@ const obtenerPersonas = async (req, res) => {
     }
 };
 
-// Obtener una persona por ID
 const obtenerPersonaPorId = async (req, res) => {
     try {
         const { id } = req.params;
@@ -74,7 +70,6 @@ const obtenerPersonaPorId = async (req, res) => {
     }
 };
 
-// Actualizar persona
 const actualizarPersona = async (req, res) => {
     try {
         const { id } = req.params;
@@ -115,7 +110,6 @@ const actualizarPersona = async (req, res) => {
     }
 };
 
-// Eliminar 
 const eliminarPersona = async (req, res) => {
     try {
         const { id } = req.params;

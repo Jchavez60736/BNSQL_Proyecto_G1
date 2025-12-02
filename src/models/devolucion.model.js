@@ -15,14 +15,10 @@ const detalleDevolucionSchema = new mongoose.Schema(
         estadoDevolucion: {
             type: String,
             enum: ['Bueno', 'Dañado', 'Reparación requerida', 'Otro'],
-            default: 'Bueno'
-        },
-        observaciones: {
-            type: String,
-            trim: true
+            default: 'Otro'
         }
     },
-    { _id: false } // no necesitamos _id por cada detalle
+    { _id: false }
 );
 
 const devolucionSchema = new mongoose.Schema(
@@ -53,22 +49,13 @@ const devolucionSchema = new mongoose.Schema(
         observacionesGenerales: {
             type: String,
             trim: true
-        },
-        fechaRegistro: {
-            type: Date,
-            default: Date.now
         }
     },
     {
         collection: 'devoluciones',
-        timestamps: true // createdAt y updatedAt automáticos
+        timestamps: true 
     }
 );
-
-// Índices recomendados
-devolucionSchema.index({ idPrestamo: 1 });
-devolucionSchema.index({ idPersonaDevuelve: 1 });
-devolucionSchema.index({ fechaDevolucion: -1 });
 
 const Devolucion = mongoose.model('Devolucion', devolucionSchema);
 
