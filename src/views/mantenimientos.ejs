@@ -25,17 +25,15 @@
                     <thead class="table-light">
                         <tr>
                             <th>Fecha Inicio</th>
-                            <th>Tipo</th>
-                            <th>Descripción</th>
-                            <th>Responsable</th>
                             <th>Fecha Fin</th>
+                            <th>Tipo</th>
+                            <th>Responsable</th>
+                            <th>Resultado</th>
                             <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="cuerpoTabla">
-                        <!-- Las filas se cargarán con JavaScript -->
-                    </tbody>
+                    <tbody id="cuerpoTabla"></tbody>
                 </table>
             </div>
             <div id="sinDatos" class="alert alert-info text-center mt-3">
@@ -55,13 +53,12 @@
                 <div class="modal-body">
                     <form id="formularioMantenimiento">
                         <input type="hidden" id="idMantenimiento">
-
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="idItem" class="form-label">Ítem *</label>
+                                    <label for="idItem" class="form-label">Item *</label>
                                     <select class="form-control" id="idItem" required>
-                                        <option value="">Seleccionar ítem...</option>
+                                        <option value="">Seleccionar</option>
                                     </select>
                                     <small class="text-muted" id="infoItem"></small>
                                     <small class="text-danger" id="errorIdItem"></small>
@@ -71,7 +68,7 @@
                                 <div class="mb-3">
                                     <label for="tipoMantenimiento" class="form-label">Tipo de Mantenimiento *</label>
                                     <select class="form-control" id="tipoMantenimiento" required>
-                                        <option value="">Seleccionar...</option>
+                                        <option value="">Seleccionar</option>
                                         <option value="Preventivo">Preventivo</option>
                                         <option value="Correctivo">Correctivo</option>
                                     </select>
@@ -91,14 +88,14 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="fechaInicio" class="form-label">Fecha Inicio *</label>
-                                    <input type="datetime-local" class="form-control" id="fechaInicio" required>
+                                    <input type="date" class="form-control" id="fechaInicio" required>
                                     <small class="text-danger" id="errorFechaInicio"></small>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="fechaFin" class="form-label">Fecha Fin</label>
-                                    <input type="datetime-local" class="form-control" id="fechaFin">
+                                    <input type="date" class="form-control" id="fechaFin">
                                     <small class="text-danger" id="errorFechaFin"></small>
                                 </div>
                             </div>
@@ -108,8 +105,9 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="responsable" class="form-label">Responsable *</label>
-                                    <input type="text" class="form-control" id="responsable" required>
-                                    <small class="text-danger" id="errorResponsable"></small>
+                                    <select class="form-control" id="responsable" required>
+                                        <option value="">Seleccionar</option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -143,287 +141,203 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modalDetalles" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detalles del Mantenimiento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="detallesContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const modalMantenimiento = new bootstrap.Modal(document.getElementById('modalMantenimiento'));
+        const modalDetalles = new bootstrap.Modal(document.getElementById('modalDetalles'));
         let editando = false;
 
-        // Cargar mantenimientos al iniciar
         cargarMantenimientos();
 
-        // Evento del botón guardar
-        document.getElementById('btnGuardar').addEventListener('click', guardarMantenimiento);
-
-        // Evento para limpiar modal al cerrar
-        document.getElementById('modalMantenimiento').addEventListener('hidden.bs.modal', () => {
-            document.getElementById('formularioMantenimiento').reset();
-            document.getElementById('idMantenimiento').value = '';
-            document.getElementById('idItem').disabled = false;
-            
-            // Restaurar el texto original de la primera opción
-            const selectItem = document.getElementById('idItem');
-            const primeraOpcion = selectItem.querySelector('option:first-child');
-            primeraOpcion.textContent = 'Seleccionar ítem...';
-            
-            document.getElementById('infoItem').textContent = '';
-            document.getElementById('tituloModal').textContent = 'Nuevo Mantenimiento';
-            editando = false;
-            limpiarErrores();
+        document.getElementById('modalMantenimiento').addEventListener('show.bs.modal', () => {
+            if (!editando) {
+                cargarItems();
+                cargarPersonas();
+            }
         });
 
-        // Cargar items al abrir el modal
-        document.getElementById('modalMantenimiento').addEventListener('show.bs.modal', cargarItems);
+        document.getElementById('modalMantenimiento').addEventListener('hidden.bs.modal', () => {
+            document.getElementById('formularioMantenimiento').reset();
+            document.getElementById('idMantenimiento').value = "";
+            document.getElementById('tituloModal').innerText = "Nuevo Mantenimiento";
+            editando = false;
+        });
 
-        // Cargar items al abrir el modal
-        document.getElementById('modalMantenimiento').addEventListener('show.bs.modal', cargarItems);
-
-        async function cargarItems() {
-            try {
-                const respuesta = await fetch('/api/items');
-                const datos = await respuesta.json();
-
-                const selectItem = document.getElementById('idItem');
-                // Mantener la primera opción
-                const primeraOpcion = selectItem.innerHTML;
-
-                if (datos.ok && datos.data.length > 0) {
-                    selectItem.innerHTML = primeraOpcion;
-                    datos.data.forEach(item => {
-                        const option = document.createElement('option');
-                        option.value = item._id;
-                        option.textContent = `${item.nombreItem} (${item.categoria})`;
-                        selectItem.appendChild(option);
-                    });
-                }
-            } catch (error) {
-                console.error('Error al cargar items:', error);
-            }
-        }
-
-        function limpiarErrores() {
-            document.querySelectorAll('.text-danger').forEach(elem => {
-                elem.textContent = '';
-            });
-        }
-
-        function mostrarError(elemento, mensaje) {
-            const errorElem = document.getElementById('error' + elemento.charAt(0).toUpperCase() + elemento.slice(1));
-            if (errorElem) {
-                errorElem.textContent = mensaje;
-            }
-        }
-
-        function validarFormulario() {
-            limpiarErrores();
-            let esValido = true;
-
-            const idItem = document.getElementById('idItem').value;
-            if (!idItem) {
-                mostrarError('idItem', 'Debe seleccionar un ítem');
-                esValido = false;
-            }
-
-            const tipoMantenimiento = document.getElementById('tipoMantenimiento').value;
-            if (!tipoMantenimiento) {
-                mostrarError('tipoMantenimiento', 'Debe seleccionar el tipo');
-                esValido = false;
-            }
-
-            const descripcionProcedimiento = document.getElementById('descripcionProcedimiento').value.trim();
-            if (!descripcionProcedimiento) {
-                mostrarError('descripcionProcedimiento', 'La descripción es obligatoria');
-                esValido = false;
-            } else if (descripcionProcedimiento.length < 5) {
-                mostrarError('descripcionProcedimiento', 'La descripción debe tener al menos 5 caracteres');
-                esValido = false;
-            }
-
-            const fechaInicio = document.getElementById('fechaInicio').value;
-            if (!fechaInicio) {
-                mostrarError('fechaInicio', 'La fecha de inicio es obligatoria');
-                esValido = false;
-            }
-
-            const responsable = document.getElementById('responsable').value.trim();
-            if (!responsable) {
-                mostrarError('responsable', 'El responsable es obligatorio');
-                esValido = false;
-            }
-
-            return esValido;
-        }
+        document.getElementById('btnGuardar').addEventListener('click', guardarMantenimiento);
 
         async function cargarMantenimientos() {
-            try {
-                console.log('Cargando mantenimientos...');
-                const respuesta = await fetch('/api/mantenimientos');
-                const datos = await respuesta.json();
 
-                console.log('Mantenimientos obtenidos:', datos);
+            const res = await fetch('/api/mantenimientos');
+            const datos = await res.json();
 
-                const cuerpoTabla = document.getElementById('cuerpoTabla');
-                const sinDatos = document.getElementById('sinDatos');
+            const cuerpoTabla = document.getElementById('cuerpoTabla');
+            const sinDatos = document.getElementById('sinDatos');
 
-                cuerpoTabla.innerHTML = '';
+            cuerpoTabla.innerHTML = '';
 
-                if (datos.ok && datos.data.length > 0) {
-                    sinDatos.style.display = 'none';
-                    datos.data.forEach(mantenimiento => {
-                        const fechaInicio = new Date(mantenimiento.fechaInicio).toLocaleDateString();
-                        const fechaFin = mantenimiento.fechaFin ? new Date(mantenimiento.fechaFin).toLocaleDateString() : '-';
+            if (datos.ok && datos.data.length > 0) {
+                sinDatos.style.display = 'none';
 
-                        const fila = document.createElement('tr');
-                        fila.innerHTML = `
-                        <td>${fechaInicio}</td>
-                        <td>
-                            <span class="badge bg-${mantenimiento.tipoMantenimiento === 'Preventivo' ? 'info' : 'warning'}">
-                                ${mantenimiento.tipoMantenimiento}
-                            </span>
-                        </td>
-                        <td><small>${mantenimiento.descripcionProcedimiento.substring(0, 50)}...</small></td>
-                        <td><strong>${mantenimiento.responsable}</strong></td>
-                        <td>${fechaFin}</td>
-                        <td>
-                            <span class="badge bg-${getColorEstado(mantenimiento.estado)}">
-                                ${mantenimiento.estado}
-                            </span>
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-warning" onclick="editarMantenimiento('${mantenimiento._id}')">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger" onclick="eliminarMantenimiento('${mantenimiento._id}')">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
+                datos.data.forEach(m => {
+                    cuerpoTabla.innerHTML += `
+                        <tr>
+                            <td>${new Date(m.fechaInicio).toLocaleDateString('es-CR')}</td>
+                            <td>${new Date(m.fechaFin).toLocaleDateString('es-CR')}</td>
+                            <td>${m.tipoMantenimiento}</td>
+                            <td><strong>${m.responsable.nombreCompleto}</strong></td>
+                            <td>${m.resultado}</td>
+                            <td>${m.estado}</td>
+                            <td>
+                                <button class="btn btn-sm btn-info" onclick="verDetalles('${m._id}')"><i class="bi bi-eye"></i></button>
+                                <button class="btn btn-sm btn-warning" onclick="editarMantenimiento('${m._id}')"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-sm btn-danger" onclick="eliminarMantenimiento('${m._id}')"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
                     `;
-                        cuerpoTabla.appendChild(fila);
-                    });
-                } else {
-                    sinDatos.style.display = 'block';
-                }
-            } catch (error) {
-                console.error('Error al cargar mantenimientos:', error);
+                });
+            } else {
+                sinDatos.style.display = 'block';
             }
         }
 
-        function getColorEstado(estado) {
-            const colores = {
-                'Activo': 'success',
-                'Cerrado': 'secondary',
-                'Cancelado': 'danger'
-            };
-            return colores[estado] || 'secondary';
+        async function cargarItems() {
+            const res = await fetch('/api/items');
+            const datos = await res.json();
+
+            const select = document.getElementById('idItem');
+            select.innerHTML = '<option value="">Seleccionar</option>';
+
+            if (datos.ok && datos.data.length > 0) {
+                datos.data.forEach(i => {
+                    const option = document.createElement('option');
+                    option.value = i._id;
+                    option.textContent = `${i.nombreItem} (${i.categoria.nombre})`;
+                    select.appendChild(option);
+                });
+            } else {
+                const option = document.createElement('option');
+                option.textContent = "No hay items registrados";
+                option.disabled = true;
+                select.appendChild(option);
+            }
         }
 
+        async function cargarPersonas() {
+            const res = await fetch('/api/personas');
+            const datos = await res.json();
+
+            const select = document.getElementById('responsable');
+            select.innerHTML = '<option value="">Seleccionar</option>';
+
+            if (datos.ok && datos.data.length > 0) {
+                datos.data.forEach(p => {
+                    const option = document.createElement('option');
+                    option.value = p._id;
+                    option.textContent = p.nombreCompleto;
+                    select.appendChild(option);
+                });
+            } else {
+                const option = document.createElement('option');
+                option.textContent = "No hay personas registradas";
+                option.disabled = true;
+                select.appendChild(option);
+            }
+        }
+
+        async function verDetalles(id) {
+            const res = await fetch(`/api/mantenimientos/${id}`);
+            const datos = await res.json();
+            const m = datos.data;
+
+            document.getElementById('detallesContent').innerHTML = `
+            <p><strong>Item:</strong> ${m.idItem?.nombreItem || 'Sin nombre'}</p>
+            <p><strong>Tipo de Mantenimiento:</strong> ${m.tipoMantenimiento}</p>
+            <p><strong>Descripción del Procedimiento:</strong> ${m.descripcionProcedimiento}</p>
+            <p><strong>Fecha de Inicio:</strong> ${new Date(m.fechaInicio).toISOString().split("T")[0]}</p>
+            <p><strong>Fecha de Finalización:</strong> ${new Date(m.fechaFin).toISOString().split("T")[0]}</p>
+            <p><strong>Responsable:</strong> ${m.responsable?.nombreCompleto || 'Sin nombre'}</p>
+            <p><strong>Resultado:</strong> ${m.resultado}</p>
+            <p><strong>Observaciones:</strong> ${m.observaciones}</p>
+            <p><strong>Estado:</strong> ${m.estado}</p>
+            `;
+
+            modalDetalles.show();
+        }
+        
         async function guardarMantenimiento() {
-            if (!validarFormulario()) {
-                return;
-            }
-
             const id = document.getElementById('idMantenimiento').value;
             const idItem = document.getElementById('idItem').value;
             const tipoMantenimiento = document.getElementById('tipoMantenimiento').value;
             const descripcionProcedimiento = document.getElementById('descripcionProcedimiento').value.trim();
-            const fechaInicio = document.getElementById('fechaInicio').value;
-            const fechaFin = document.getElementById('fechaFin').value;
-            const responsable = document.getElementById('responsable').value.trim();
+            const fechaInicio = document.getElementById('fechaInicio').value + "T12:00:00";
+            const fechaFin = document.getElementById('fechaFin').value + "T12:00:00";
+            const responsable = document.getElementById('responsable').value;
             const estado = document.getElementById('estado').value;
             const resultado = document.getElementById('resultado').value.trim();
             const observaciones = document.getElementById('observaciones').value.trim();
 
-            console.log('Guardando mantenimiento. Editando:', editando, 'ID:', id);
+            const datos = { idItem, fechaInicio, fechaFin, tipoMantenimiento, descripcionProcedimiento, responsable, resultado, observaciones, estado };
 
-            const datos = {
-                idItem,
-                tipoMantenimiento,
-                descripcionProcedimiento,
-                fechaInicio: new Date(fechaInicio).toISOString(),
-                fechaFin: fechaFin ? new Date(fechaFin).toISOString() : null,
-                responsable,
-                estado,
-                resultado: resultado || undefined,
-                observaciones: observaciones || undefined
-            };
+            const url = editando ? `/api/mantenimientos/${id}` : '/api/mantenimientos';
+            const metodo = editando ? 'PUT' : 'POST';
 
-            try {
-                const url = editando ? `/api/mantenimientos/${id}` : '/api/mantenimientos';
-                const metodo = editando ? 'PUT' : 'POST';
+            const res = await fetch(url, {
+                method: metodo,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            });
 
-                console.log('Enviando datos a:', url, 'Método:', metodo, 'Datos:', datos);
-
-                const respuesta = await fetch(url, {
-                    method: metodo,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(datos)
-                });
-
-                const resultado_resp = await respuesta.json();
-
-                if (resultado_resp.ok) {
-                    alert(editando ? 'Mantenimiento actualizado correctamente' : 'Mantenimiento creado correctamente');
-                    modalMantenimiento.hide();
-                    cargarMantenimientos();
-                } else {
-                    // Mostrar errores de validación específicos
-                    console.error('Error del servidor:', resultado_resp);
-                    alert('Error: ' + resultado_resp.msg);
-                }
-            } catch (error) {
-                console.error('Error al guardar:', error);
-                alert('Error al guardar el mantenimiento: ' + error.message);
+            const data = await res.json();
+            if (data.ok) {
+                cargarMantenimientos();
+                modalMantenimiento.hide();
+                alert(editando ? 'Mantenimiento actualizado correctamente' : 'Mantenimiento guardado correctamente');
+            } else {
+                alert('Error: ' + data.msg);
             }
         }
 
         async function editarMantenimiento(id) {
-            try {
-                console.log('Editando mantenimiento con ID:', id);
-                
-                // Primero cargar los items para que estén disponibles en el select
-                await cargarItems();
-                
-                // Luego cargar el mantenimiento
-                const respuesta = await fetch(`/api/mantenimientos/${id}`);
-                const datos = await respuesta.json();
+            const res = await fetch(`/api/mantenimientos/${id}`);
+            const datos = await res.json();
 
-                if (datos.ok) {
-                    const mantenimiento = datos.data;
-                    document.getElementById('idMantenimiento').value = mantenimiento._id;
-                    
-                    // Asignar el ID correcto del item (puede ser objeto con _id o string)
-                    const idItemValue = typeof mantenimiento.idItem === 'object' ? mantenimiento.idItem._id : mantenimiento.idItem;
-                    const nombreItem = typeof mantenimiento.idItem === 'object' ? mantenimiento.idItem.nombreItem : '';
-                    
-                    console.log('Asignando idItem:', idItemValue, 'Nombre:', nombreItem);
-                    document.getElementById('idItem').value = idItemValue;
-                    
-                    // Cambiar el texto del placeholder/opción por defecto
-                    const selectItem = document.getElementById('idItem');
-                    const primeraOpcion = selectItem.querySelector('option:first-child');
-                    primeraOpcion.textContent = nombreItem ? `${nombreItem}` : 'Seleccionar ítem...';
-                    
-                    // Deshabilitar el select de ítem en edición
-                    document.getElementById('idItem').disabled = true;
-                    document.getElementById('infoItem').textContent = nombreItem ? `(${nombreItem})` : '';
-                    
-                    document.getElementById('tipoMantenimiento').value = mantenimiento.tipoMantenimiento;
-                    document.getElementById('descripcionProcedimiento').value = mantenimiento.descripcionProcedimiento;
-                    document.getElementById('fechaInicio').value = new Date(mantenimiento.fechaInicio).toISOString().slice(0, 16);
-                    document.getElementById('fechaFin').value = mantenimiento.fechaFin ? new Date(mantenimiento.fechaFin).toISOString().slice(0, 16) : '';
-                    document.getElementById('responsable').value = mantenimiento.responsable;
-                    document.getElementById('estado').value = mantenimiento.estado;
-                    document.getElementById('resultado').value = mantenimiento.resultado || '';
-                    document.getElementById('observaciones').value = mantenimiento.observaciones || '';
-                    document.getElementById('tituloModal').textContent = 'Editar Mantenimiento';
-                    editando = true;
-                    console.log('Mantenimiento cargado:', mantenimiento);
-                    modalMantenimiento.show();
-                } else {
-                    alert('Error: ' + datos.msg);
-                }
-            } catch (error) {
-                console.error('Error al obtener mantenimiento:', error);
-                alert('Error al cargar el mantenimiento');
+            if (!datos.ok) {
+                alert('Error cargando los mantenimientos');
+                return;
             }
+
+            const m = datos.data;
+            editando = true;
+
+            await cargarItems();
+            await cargarPersonas();            
+
+            document.getElementById('idMantenimiento').value = m._id;
+            document.getElementById('idItem').value = m.idItem._id;
+            document.getElementById('tipoMantenimiento').value = m.tipoMantenimiento;
+            document.getElementById('descripcionProcedimiento').value = m.descripcionProcedimiento;
+            document.getElementById('fechaInicio').value = m.fechaInicio.split('T')[0];
+            document.getElementById('fechaFin').value = m.fechaFin.split('T')[0];
+            document.getElementById('responsable').value = m.responsable._id;
+            document.getElementById('estado').value = m.estado;
+            document.getElementById('resultado').value = m.resultado;
+            document.getElementById('observaciones').value = m.observaciones;
+
+            document.getElementById('tituloModal').textContent = 'Editar Mantenimiento';
+            modalMantenimiento.show();
         }
 
         async function eliminarMantenimiento(id) {
@@ -432,8 +346,8 @@
             }
 
             try {
-                const respuesta = await fetch(`/api/mantenimientos/${id}`, { method: 'DELETE' });
-                const datos = await respuesta.json();
+                const res = await fetch(`/api/mantenimientos/${id}`, { method: 'DELETE' });
+                const datos = await res.json();
 
                 if (datos.ok) {
                     alert('Mantenimiento eliminado correctamente');

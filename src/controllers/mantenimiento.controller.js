@@ -1,6 +1,5 @@
 const Mantenimiento = require('../models/mantenimiento.model');
 
-// Crear mantenimiento
 const crearMantenimiento = async (req, res) => {
     try {
         const datos = req.body;
@@ -22,13 +21,12 @@ const crearMantenimiento = async (req, res) => {
     }
 };
 
-// Listar todos los mantenimientos
 const obtenerMantenimientos = async (req, res) => {
     try {
-        const mantenimientos = await Mantenimiento
-            .find()
+        const mantenimientos = await Mantenimiento.find()
             .sort({ fechaInicio: -1 })
-            .populate('idItem'); // si luego se agrega modelo Item
+            .populate('idItem') 
+            .populate('responsable'); 
 
         return res.json({
             ok: true,
@@ -43,14 +41,13 @@ const obtenerMantenimientos = async (req, res) => {
     }
 };
 
-// Obtener mantenimiento por ID
 const obtenerMantenimientoPorId = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const mantenimiento = await Mantenimiento
-            .findById(id)
-            .populate('idItem');
+        const mantenimiento = await Mantenimiento.findById(id)
+            .populate('idItem') 
+            .populate('responsable'); 
 
         if (!mantenimiento) {
             return res.status(404).json({
@@ -72,7 +69,6 @@ const obtenerMantenimientoPorId = async (req, res) => {
     }
 };
 
-// Actualizar mantenimiento
 const actualizarMantenimiento = async (req, res) => {
     try {
         const { id } = req.params;
@@ -105,7 +101,6 @@ const actualizarMantenimiento = async (req, res) => {
     }
 };
 
-// Eliminar mantenimiento 
 const eliminarMantenimiento = async (req, res) => {
     try {
         const { id } = req.params;
