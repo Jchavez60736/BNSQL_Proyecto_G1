@@ -1,7 +1,6 @@
 <body>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="/home">Inicio</a></li>
@@ -9,7 +8,6 @@
         </ol>
     </nav>
 
-    <!-- Encabezado -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h2">Gestión de Préstamos</h1>
         <button class="btn btn-teal" data-bs-toggle="modal" data-bs-target="#modalPrestamo">
@@ -17,34 +15,32 @@
         </button>
     </div>
 
-    <!-- Tabla de Préstamos -->
     <div class="card shadow-sm">
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-hover" id="tablaPrestamos">
                     <thead class="table-light">
                         <tr>
-                            <th>Nombre del Préstamo</th>
-                            <th>Fecha Inicio</th>
-                            <th>Fecha Fin</th>
+                            <th>Préstamo</th>
+                            <th>Evento Asociado</th>
+                            <th>Fecha Registro</th>
+                            <th>Devolución Prevista</th>
                             <th>Responsable</th>
-                            <th>Iglesia</th>
                             <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="cuerpoTabla">
-                        <!-- Las filas se cargarán con JavaScript -->
+
                     </tbody>
                 </table>
             </div>
-            <div id="sinDatos" class="alert alert-info text-center mt-3">
+            <div id="sinDatos" class="alert alert-info text-center mt-3" style="display:none;">
                 No hay préstamos registrados aún.
             </div>
         </div>
     </div>
 
-    <!-- Modal para Crear/Editar Préstamo -->
     <div class="modal fade" id="modalPrestamo" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -56,101 +52,89 @@
                     <form id="formularioPrestamo">
                         <input type="hidden" id="idPrestamo">
 
-                        <div class="mb-3">
-                            <label for="nombrePrestamo" class="form-label">Nombre del Préstamo/Actividad *</label>
-                            <input type="text" class="form-control" id="nombrePrestamo" required>
-                            <small class="text-danger" id="errorNombre"></small>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="descripcion" class="form-label">Descripción</label>
-                            <textarea class="form-control" id="descripcion" rows="3"></textarea>
-                        </div>
-
                         <div class="row">
                             <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="fechaInicio" class="form-label">Fecha Inicio *</label>
-                                    <input type="datetime-local" class="form-control" id="fechaInicio" required>
-                                    <small class="text-danger" id="errorFechaInicio"></small>
-                                </div>
+                                <label class="form-label">Nombre del Préstamo *</label>
+                                <input type="text" class="form-control" id="nombrePrestamo" required>
                             </div>
+
                             <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="fechaFin" class="form-label">Fecha Fin</label>
-                                    <input type="datetime-local" class="form-control" id="fechaFin">
-                                    <small class="text-danger" id="errorFechaFin"></small>
-                                </div>
+                                <label class="form-label">Evento *</label>
+                                <select class="form-control" id="evento" required>
+                                    <option value="">Seleccionar Evento</option>
+                                </select>
                             </div>
                         </div>
 
-                        <div class="row">
+                        <div class="row mt-3">
                             <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="iglesiaAsociada" class="form-label">Iglesia Asociada *</label>
-                                    <select class="form-control" id="iglesiaAsociada" required>
-                                        <option value="">Seleccionar...</option>
-                                    </select>
-                                    <small class="text-muted" id="infoIglesia"></small>
-                                    <small class="text-danger" id="errorIglesia"></small>
-                                </div>
+                                <label class="form-label">Fecha de Devolución Prevista *</label>
+                                <input type="date" class="form-control" id="fechaDevolucionPrevista" required>
                             </div>
+
                             <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="responsable" class="form-label">Responsable *</label>
-                                    <select class="form-control" id="responsable" required>
-                                        <option value="">Seleccionar...</option>
-                                    </select>
-                                    <small class="text-muted" id="infoResponsable"></small>
-                                    <small class="text-danger" id="errorResponsable"></small>
-                                </div>
+                                <label class="form-label">Responsable *</label>
+                                <select class="form-control" id="responsable" required>
+                                    <option value="">Seleccionar Responsable</option>
+                                </select>
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="ubicacion" class="form-label">Ubicación</label>
-                            <input type="text" class="form-control" id="ubicacion">
-                        </div>
+                        <div class="mb-3 mt-4">
+                            <h6 class="mb-3">Detalle de Préstamo</h6>
 
-                        <div class="mb-3">
-                            <label for="estadoActual" class="form-label">Estado</label>
-                            <select class="form-control" id="estadoActual">
-                                <option value="Activo">Activo</option>
-                                <option value="Completado">Completado</option>
-                                <option value="Cancelado">Cancelado</option>
-                            </select>
-                        </div>
+                            <div id="detalleContainer" class="p-3 border rounded">
 
-                        <!-- Participantes -->
-                        <div class="mb-4">
-                            <h6 class="mb-3">Participantes</h6>
-                            <div id="participantesContainer">
-                                <div class="participante-item mb-3 p-3 border rounded">
-                                    <div class="row">
-                                        <div class="col-md-8">
-                                            <label class="form-label">Persona *</label>
-                                            <input type="text" class="form-control persona" required>
+                                <div id="listaItems">
+
+                                    <div class="detalle-prestamo-item d-flex gap-3 mb-3">
+                                        <div class="flex-fill">
+                                            <label class="form-label">Item *</label>
+                                            <select class="form-control item" required>
+                                                <option value="">Seleccionar Item</option>
+                                            </select>
                                         </div>
-                                        <div class="col-md-4">
-                                            <label class="form-label">Rol *</label>
-                                            <input type="text" class="form-control rol" required>
+
+                                        <div class="flex-fill">
+                                            <label class="form-label">Cantidad *</label>
+                                            <input type="number" min="1" class="form-control cantidad" required>
+                                        </div>
+
+                                        <div class="d-flex align-items-end">
+                                            <button type="button" class="btn btn-md btn-danger"
+                                                onclick="eliminarItem(this)">
+                                                <i class="bi bi-trash"></i> Eliminar
+                                            </button>
                                         </div>
                                     </div>
-                                    <button type="button" class="btn btn-sm btn-danger"
-                                        onclick="eliminarParticipante(this)">
-                                        <i class="bi bi-trash"></i> Eliminar
-                                    </button>
+
                                 </div>
+
+                                <button type="button" class="btn btn-sm btn-secondary mt-3" onclick="agregarItem()">
+                                    <i class="bi bi-plus"></i> Agregar Item
+                                </button>
+
                             </div>
-                            <button type="button" class="btn btn-sm btn-secondary" onclick="agregarParticipante()">
-                                <i class="bi bi-plus"></i> Agregar Participante
-                            </button>
                         </div>
 
                         <div class="mb-3">
-                            <label for="observaciones" class="form-label">Observaciones</label>
-                            <textarea class="form-control" id="observaciones" rows="2"></textarea>
+                            <label class="form-label">Observaciones</label>
+                            <textarea class="form-control" id="observaciones"></textarea>
                         </div>
+
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Estado</label>
+                                <select class="form-control" id="estadoActual">
+                                    <option value="Activo">Activo</option>
+                                    <option value="Pendiente">Pendiente</option>
+                                    <option value="Vencido">Vencido</option>
+                                    <option value="Devuelto">Devuelto</option>
+                                </select>
+                            </div>
+
+                        </div>
+
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -161,18 +145,16 @@
         </div>
     </div>
 
-    <!-- Modal de Detalles -->
     <div class="modal fade" id="modalDetalles" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Detalles del Préstamo</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
+
                 <div class="modal-body">
-                    <div id="detallesContent">
-                        <!-- Se llenará dinámicamente -->
-                    </div>
+                    <div id="detallesContent"></div>
                 </div>
             </div>
         </div>
@@ -181,148 +163,33 @@
     <script>
         const modalPrestamo = new bootstrap.Modal(document.getElementById('modalPrestamo'));
         const modalDetalles = new bootstrap.Modal(document.getElementById('modalDetalles'));
+
         let editando = false;
+        let itemsCache = null;
 
-        async function cargarIglesias() {
-            const select = document.getElementById('iglesiaAsociada');
-            if (!select) return;
-            select.innerHTML = '<option value="">Seleccionar...</option>';
-            try {
-                const res = await fetch('/api/iglesias');
-                const payload = await res.json();
-                const data = Array.isArray(payload) ? payload : (payload && payload.data ? payload.data : []);
-                data.forEach(i => {
-                    const opt = document.createElement('option');
-                    opt.value = i._id;
-                    opt.textContent = i.nombreIglesia || i.nombre || i._id;
-                    select.appendChild(opt);
-                });
-            } catch (err) {
-                console.error('Error cargando iglesias', err);
-            }
-        }
-
-        async function cargarPersonas() {
-            const select = document.getElementById('responsable');
-            if (!select) return;
-            select.innerHTML = '<option value="">Seleccionar...</option>';
-            try {
-                const res = await fetch('/api/personas');
-                const payload = await res.json();
-                const data = Array.isArray(payload) ? payload : (payload && payload.data ? payload.data : []);
-                data.forEach(p => {
-                    const opt = document.createElement('option');
-                    opt.value = p._id;
-                    opt.textContent = p.nombreCompleto || (p.nombres ? (p.nombres + ' ' + (p.apellidos || '')) : p._id);
-                    select.appendChild(opt);
-                });
-            } catch (err) {
-                console.error('Error cargando personas', err);
-            }
-        }
-
-        // Copiar las opciones del select #responsable a los selects de participantes
-        function copyResponsableOptionsTo(selectElement) {
-            const resp = document.getElementById('responsable');
-            if (!resp || !selectElement) return;
-            // clone options
-            selectElement.innerHTML = resp.innerHTML;
-        }
-
-        function fillAllParticipantSelects() {
-            document.querySelectorAll('.participante-item .persona').forEach(s => copyResponsableOptionsTo(s));
-        }
-
-        // Cargar datos al iniciar
-        cargarIglesias();
-        cargarPersonas();
         cargarPrestamos();
 
-        // Evento del botón guardar
-        document.getElementById('btnGuardar').addEventListener('click', guardarPrestamo);
-
-        // Evento para limpiar modal al cerrar
-        document.getElementById('modalPrestamo').addEventListener('hidden.bs.modal', () => {
-            document.getElementById('formularioPrestamo').reset();
-            document.getElementById('idPrestamo').value = '';
-            document.getElementById('participantesContainer').innerHTML = `
-            <div class="participante-item mb-3 p-3 border rounded">
-                <div class="row">
-                    <div class="col-md-8">
-                        <label class="form-label">Persona *</label>
-                        <select class="form-control persona" required>
-                            <option value="">Seleccionar...</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Rol *</label>
-                        <input type="text" class="form-control rol" required>
-                    </div>
-                </div>
-                <button type="button" class="btn btn-sm btn-danger" onclick="eliminarParticipante(this)">
-                    <i class="bi bi-trash"></i> Eliminar
-                </button>
-            </div>
-        `;
-            document.getElementById('tituloModal').textContent = 'Nuevo Préstamo';
-            editando = false;
-            // restore selects and info
-            const iglesia = document.getElementById('iglesiaAsociada');
-            const responsable = document.getElementById('responsable');
-            if (iglesia) {
-                iglesia.disabled = false;
-                if (iglesia.options.length) iglesia.options[0].text = 'Seleccionar...';
+        document.getElementById('modalPrestamo').addEventListener('show.bs.modal', () => {
+            if (!editando) {
+                cargarEventos();
+                cargarPersonas();
+                cargarItems();
             }
-            if (responsable) {
-                responsable.disabled = false;
-                if (responsable.options.length) responsable.options[0].text = 'Seleccionar...';
-            }
-            const infoI = document.getElementById('infoIglesia'); if (infoI) infoI.textContent = '';
-            const infoR = document.getElementById('infoResponsable'); if (infoR) infoR.textContent = '';
-            // llenar opciones en selects de participantes
-            fillAllParticipantSelects();
         });
 
-        function agregarParticipante() {
-            const container = document.getElementById('participantesContainer');
-            const participante = document.createElement('div');
-            participante.className = 'participante-item mb-3 p-3 border rounded';
-            participante.innerHTML = `
-            <div class="row">
-                <div class="col-md-8">
-                    <label class="form-label">Persona *</label>
-                    <select class="form-control persona" required>
-                        <option value="">Seleccionar...</option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Rol *</label>
-                    <input type="text" class="form-control rol" required>
-                </div>
-            </div>
-            <button type="button" class="btn btn-sm btn-danger" onclick="eliminarParticipante(this)">
-                <i class="bi bi-trash"></i> Eliminar
-            </button>
-        `;
-            container.appendChild(participante);
-            // fill options from responsable select
-            const selNew = participante.querySelector('.persona');
-            copyResponsableOptionsTo(selNew);
-        }
+        document.getElementById('modalPrestamo').addEventListener('hidden.bs.modal', () => {
+            document.getElementById('formularioPrestamo').reset();
+            document.getElementById('idPrestamo').value = "";
+            document.getElementById('tituloModal').innerText = "Nuevo Préstamo";
+            editando = false;
+        });
 
-        function eliminarParticipante(btn) {
-            const items = document.querySelectorAll('.participante-item');
-            if (items.length > 1) {
-                btn.closest('.participante-item').remove();
-            } else {
-                alert('Debe tener al menos un participante');
-            }
-        }
+        document.getElementById('btnGuardar').addEventListener('click', guardarPrestamo);
 
         async function cargarPrestamos() {
             try {
-                const respuesta = await fetch('/api/prestamos');
-                const datos = await respuesta.json();
+                const res = await fetch('/api/prestamos');
+                const datos = await res.json();
 
                 const cuerpoTabla = document.getElementById('cuerpoTabla');
                 const sinDatos = document.getElementById('sinDatos');
@@ -331,310 +198,304 @@
 
                 if (datos.ok && datos.data.length > 0) {
                     sinDatos.style.display = 'none';
-                    datos.data.forEach(prestamo => {
-                        const fechaInicio = new Date(prestamo.fechaInicio).toLocaleDateString();
-                        const fechaFin = prestamo.fechaFin ? new Date(prestamo.fechaFin).toLocaleDateString() : '-';
 
-                        const fila = document.createElement('tr');
-                        fila.innerHTML = `
-                        <td><strong>${prestamo.nombrePrestamo}</strong></td>
-                        <td>${fechaInicio}</td>
-                        <td>${fechaFin}</td>
-                        <td>${prestamo.responsable || '-'}</td>
-                        <td>${prestamo.iglesiaAsociada || '-'}</td>
-                        <td>
-                            <span class="badge bg-${getColorEstado(prestamo.estadoActual)}">
-                                ${prestamo.estadoActual}
-                            </span>
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-info" onclick="verDetalles('${prestamo._id}')">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                            <button class="btn btn-sm btn-warning" onclick="editarPrestamo('${prestamo._id}')">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger" onclick="eliminarPrestamo('${prestamo._id}', '${prestamo.nombrePrestamo}')">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    `;
-                        cuerpoTabla.appendChild(fila);
+                    datos.data.forEach(p => {
+                        cuerpoTabla.innerHTML += `
+                            <tr>
+                                <td>${p.nombrePrestamo}</td>
+                                <td>${p.evento?.nombreEvento || 'Sin nombre'}</td>
+                                <td>${new Date(p.fechaPrestamo).toLocaleDateString()}</td>
+                                <td>${new Date(p.fechaDevolucionPrevista).toLocaleDateString()}</td>
+                                <td>${p.responsable?.nombreCompleto || 'Sin nombre'}</td>
+                                <td>${p.estadoActual}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-info" onclick="verDetalles('${p._id}')"><i class="bi bi-eye"></i></button>
+                                    <button class="btn btn-sm btn-warning" onclick="editarPrestamo('${p._id}')"><i class="bi bi-pencil"></i></button>
+                                    <button class="btn btn-sm btn-danger" onclick="eliminarPrestamo('${p._id}', '${p.nombrePrestamo}')"><i class="bi bi-trash"></i></button>
+                                </td>
+                            </tr>
+                        `;
                     });
                 } else {
                     sinDatos.style.display = 'block';
                 }
+
             } catch (error) {
-                console.error('Error al cargar préstamos:', error);
+                console.error('Error cargando préstamos:', error);
             }
         }
 
-        function getColorEstado(estado) {
-            const colores = {
-                'Activo': 'success',
-                'Completado': 'secondary',
-                'Cancelado': 'danger'
-            };
-            return colores[estado] || 'secondary';
+        async function cargarEventos() {
+            try {
+                const res = await fetch('/api/eventos');
+                const datos = await res.json();
+
+                const select = document.getElementById('evento');
+                select.innerHTML = '<option value="">Seleccionar Evento</option>';
+
+                if (datos.ok && datos.data.length > 0) {
+                    datos.data.forEach(ev => {
+                        const option = document.createElement('option');
+                        option.value = ev._id;
+                        option.textContent = ev.nombreEvento;
+                        select.appendChild(option);
+                    });
+                } else {
+                    const option = document.createElement('option');
+                    option.textContent = "No hay eventos registradas";
+                    option.disabled = true;
+                    select.appendChild(option);
+                }
+
+            } catch (error) {
+                console.error('Error cargando eventos', error);
+            }
+        }
+
+        async function cargarPersonas() {
+            try {
+                const res = await fetch('/api/personas');
+                const datos = await res.json();
+
+                const select = document.getElementById('responsable');
+                select.innerHTML = '<option value="">Seleccionar Responsable</option>';
+
+                if (datos.ok && datos.data.length > 0) {
+                    datos.data.forEach(p => {
+                        const option = document.createElement('option');
+                        option.value = p._id;
+                        option.textContent = p.nombreCompleto;
+                        select.appendChild(option);
+                    });
+                } else {
+                    const option = document.createElement('option');
+                    option.textContent = "No hay personas registradas";
+                    option.disabled = true;
+                    select.appendChild(option);
+                }
+
+            } catch (error) {
+                console.error('Error cargando personas', error);
+            }
+        }
+
+        async function cargarItems() {
+            try {
+                if (!itemsCache) {
+                    const res = await fetch('/api/items');
+                    const datos = await res.json();
+                    if (!datos.ok) {
+                        console.error('No se obtuvieron items');
+                        return;
+                    }
+                    itemsCache = datos.data;
+                }
+
+                const selects = document.querySelectorAll(".item");
+                selects.forEach(sel => {
+                    sel.innerHTML = '<option value="">Seleccionar Item</option>';
+                    itemsCache.forEach(i => {
+                        const option = document.createElement('option');
+                        option.value = i._id;
+                        option.textContent = i.nombreItem;
+                        sel.appendChild(option);
+                    });
+                });
+            } catch (error) {
+                console.error('Error cargando items:', error);
+            }
+        }
+
+        async function cargarItemsEnSelect(select) {
+            try {
+                if (!itemsCache) {
+                    const res = await fetch('/api/items');
+                    const datos = await res.json();
+                    if (!datos.ok) {
+                        console.error('No se obtuvieron items');
+                        return false;
+                    }
+                    itemsCache = datos.data;
+                }
+
+                select.innerHTML = '<option value="">Seleccionar Item</option>';
+                itemsCache.forEach(i => {
+                    const option = document.createElement("option");
+                    option.value = i._id;
+                    option.textContent = i.nombreItem;
+                    select.appendChild(option);
+                });
+
+                return true;
+            } catch (error) {
+                console.error('Error cargando items en select:', error);
+                return false;
+            }
+        }
+
+        async function agregarItem() {
+            const lista = document.getElementById("listaItems");
+
+            const fila = document.createElement("div");
+            fila.classList.add("detalle-prestamo-item", "d-flex", "gap-3", "mb-3");
+
+            fila.innerHTML = `
+            <div class="flex-fill">
+                <label class="form-label">Item *</label>
+                <select class="form-control item" required>
+                    <option value="">Seleccionar Item</option>
+                </select>
+            </div>
+
+            <div class="flex-fill">
+                <label class="form-label">Cantidad *</label>
+                <input type="number" min="1" class="form-control cantidad" required>
+            </div>
+
+            <div class="d-flex align-items-end">
+                <button type="button" class="btn btn-md btn-danger" onclick="eliminarItem(this)">
+                    <i class="bi bi-trash"></i> Eliminar
+                </button>
+            </div>
+        `;
+
+            lista.appendChild(fila);
+            const nuevoSelect = fila.querySelector('.item');
+            await cargarItemsEnSelect(nuevoSelect);
+
+            return fila;
+        }
+
+        function eliminarItem(btn) {
+            btn.closest(".detalle-prestamo-item").remove();
+        }
+
+        // Métodos CRUD
+        async function verDetalles(id) {
+            try {
+                const res = await fetch(`/api/prestamos/${id}`);
+                const data = await res.json();
+                const p = data.data;
+                const listaItems = p.items.map(i => `
+                <li>${i.item?.nombreItem || 'Sin nombre'} — <strong>${i.cantidad}</strong></li>
+                `).join('');
+
+                document.getElementById('detallesContent').innerHTML = `
+                <p><strong>Préstamo:</strong> ${p.nombrePrestamo}</p>
+                <p><strong>Evento:</strong> ${p.evento?.nombreEvento}</p>
+                <p><strong>Fecha del Préstamo:</strong> ${new Date(p.fechaPrestamo).toLocaleString()}</p>
+                <p><strong>Devolución prevista:</strong> ${new Date(p.fechaDevolucionPrevista).toLocaleString()}</p>
+                <p><strong>Responsable:</strong> ${p.responsable?.nombreCompleto}</p>
+                <p><strong>Items prestados:</strong> ${p.items.length}</p>
+                <ul>${listaItems}</ul>
+                <p><strong>Estado:</strong> ${p.estadoActual}</p>
+                `;
+
+                modalDetalles.show();
+
+            } catch (error) {
+                console.error('Error viendo préstamo:', error);
+            }
         }
 
         async function guardarPrestamo() {
             const id = document.getElementById('idPrestamo').value;
             const nombrePrestamo = document.getElementById('nombrePrestamo').value;
-            const descripcion = document.getElementById('descripcion').value;
-            const fechaInicio = document.getElementById('fechaInicio').value;
-            const fechaFin = document.getElementById('fechaFin').value;
-            const iglesiaAsociada = document.getElementById('iglesiaAsociada').value;
+            const evento = document.getElementById('evento').value;
+            const fechaDevolucionPrevista = document.getElementById('fechaDevolucionPrevista').value.split('T')[0];
             const responsable = document.getElementById('responsable').value;
-            const ubicacion = document.getElementById('ubicacion').value;
-            const estadoActual = document.getElementById('estadoActual').value;
             const observaciones = document.getElementById('observaciones').value;
+            const estadoActual = document.getElementById('estadoActual').value;
 
-            if (!nombrePrestamo || !fechaInicio || !iglesiaAsociada || !responsable) {
-                alert('Por favor completa todos los campos requeridos');
-                return;
-            }
-
-            // Validar fechas
-            if (fechaFin && new Date(fechaFin) < new Date(fechaInicio)) {
-                alert('La fecha de fin no puede ser anterior a la fecha de inicio');
-                return;
-            }
-
-            // Recopilar participantes
-            const participantes = [];
-            const items = document.querySelectorAll('.participante-item');
-
-            items.forEach(item => {
-                const persona = item.querySelector('.persona').value;
-                const rol = item.querySelector('.rol').value;
-
-                if (persona && rol) {
-                    participantes.push({ persona, rol });
-                }
+            let items = [];
+            document.querySelectorAll('#listaItems .detalle-prestamo-item').forEach(div => {
+                items.push({
+                    item: div.querySelector('.item').value,
+                    cantidad: parseInt(div.querySelector('.cantidad').value)
+                });
             });
 
-            if (participantes.length === 0) {
-                alert('Debe agregar al menos un participante');
-                return;
-            }
-
-            const datos = {
-                nombrePrestamo,
-                descripcion,
-                fechaInicio: new Date(fechaInicio).toISOString(),
-                fechaFin: fechaFin ? new Date(fechaFin).toISOString() : null,
-                iglesiaAsociada,
-                responsable,
-                ubicacion,
-                estadoActual,
-                participantes,
-                observaciones
-            };
+            const datos = { nombrePrestamo, evento, fechaDevolucionPrevista, responsable, items, observaciones, estadoActual };
 
             try {
                 const url = editando ? `/api/prestamos/${id}` : '/api/prestamos';
                 const metodo = editando ? 'PUT' : 'POST';
 
-                const respuesta = await fetch(url, {
+                const res = await fetch(url, {
                     method: metodo,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(datos)
                 });
 
-                const resultado = await respuesta.json();
+                const data = await res.json();
 
-                if (resultado.ok) {
-                    alert(editando ? 'Préstamo actualizado correctamente' : 'Préstamo creado correctamente');
-                    modalPrestamo.hide();
+                if (data.ok) {
                     cargarPrestamos();
+                    modalPrestamo.hide();
+                    alert(editando ? 'Préstamo actualizado correctamente' : 'Préstamo creado correctamente');
                 } else {
-                    alert('Error: ' + resultado.msg);
+                    alert('Error: ' + data.msg);
                 }
+
             } catch (error) {
-                console.error('Error al guardar:', error);
-                alert('Error al guardar el préstamo');
-            }
-        }
-
-        async function verDetalles(id) {
-            try {
-                const respuesta = await fetch(`/api/prestamos/${id}`);
-                const datos = await respuesta.json();
-
-                if (datos.ok) {
-                    const prestamo = datos.data;
-                    let html = `
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>Nombre:</strong> ${prestamo.nombrePrestamo}</p>
-                            <p><strong>Responsable:</strong> ${prestamo.responsable || '-'}</p>
-                            <p><strong>Iglesia:</strong> ${prestamo.iglesiaAsociada || '-'}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <p><strong>Fecha Inicio:</strong> ${new Date(prestamo.fechaInicio).toLocaleDateString()}</p>
-                            <p><strong>Fecha Fin:</strong> ${prestamo.fechaFin ? new Date(prestamo.fechaFin).toLocaleDateString() : '-'}</p>
-                            <p><strong>Estado:</strong> <span class="badge bg-${getColorEstado(prestamo.estadoActual)}">${prestamo.estadoActual}</span></p>
-                        </div>
-                    </div>
-                    ${prestamo.descripcion ? `<p><strong>Descripción:</strong> ${prestamo.descripcion}</p>` : ''}
-                    ${prestamo.ubicacion ? `<p><strong>Ubicación:</strong> ${prestamo.ubicacion}</p>` : ''}
-                    <h6 class="mt-3">Participantes:</h6>
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Persona</th>
-                                <th>Rol</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
-
-                    if (prestamo.participantes && prestamo.participantes.length > 0) {
-                        prestamo.participantes.forEach(p => {
-                            html += `
-                            <tr>
-                                <td>${p.persona}</td>
-                                <td>${p.rol}</td>
-                            </tr>
-                        `;
-                        });
-                    }
-
-                    html += `
-                        </tbody>
-                    </table>
-                    ${prestamo.observaciones ? `<p><strong>Observaciones:</strong> ${prestamo.observaciones}</p>` : ''}
-                `;
-
-                    document.getElementById('detallesContent').innerHTML = html;
-                    modalDetalles.show();
-                }
-            } catch (error) {
-                console.error('Error al obtener detalles:', error);
+                console.error('Error al guardar préstamo:', error);
             }
         }
 
         async function editarPrestamo(id) {
             try {
-                const respuesta = await fetch(`/api/prestamos/${id}`);
-                const datos = await respuesta.json();
+                const resp = await fetch(`/api/prestamos/${id}`);
+                const data = await resp.json();
 
-                if (datos.ok) {
-                    const prestamo = datos.data;
-                        // ensure selects populated first
-                        await cargarIglesias();
-                        await cargarPersonas();
+                if (!data.ok) {
+                    alert("Error cargando préstamo");
+                    return;
+                }
 
-                        document.getElementById('idPrestamo').value = prestamo._id;
-                        document.getElementById('nombrePrestamo').value = prestamo.nombrePrestamo;
-                        document.getElementById('descripcion').value = prestamo.descripcion || '';
-                        document.getElementById('fechaInicio').value = new Date(prestamo.fechaInicio).toISOString().slice(0, 16);
-                        document.getElementById('fechaFin').value = prestamo.fechaFin ? new Date(prestamo.fechaFin).toISOString().slice(0, 16) : '';
+                const p = data.data;
+                editando = true;
 
-                        // Iglesia asociada: try to set by id, otherwise show name in first option and disable
-                        const selIglesia = document.getElementById('iglesiaAsociada');
-                        let iglesiaId = '';
-                        let iglesiaName = '';
-                        if (prestamo.iglesiaAsociada && typeof prestamo.iglesiaAsociada === 'object') {
-                            iglesiaId = prestamo.iglesiaAsociada._id || '';
-                            iglesiaName = prestamo.iglesiaAsociada.nombreIglesia || prestamo.iglesiaAsociada.nombre || '';
-                        } else {
-                            iglesiaId = prestamo.iglesiaAsociada || '';
-                            iglesiaName = prestamo.iglesiaAsociada || '';
-                        }
-                        if (selIglesia) {
-                            const exists = Array.from(selIglesia.options).some(o => o.value === iglesiaId);
-                            if (exists) {
-                                selIglesia.value = iglesiaId;
-                            } else {
-                                selIglesia.options[0].text = iglesiaName || 'Seleccionado';
-                                selIglesia.options[0].value = iglesiaId || '';
-                                selIglesia.value = iglesiaId || '';
-                            }
-                            selIglesia.disabled = true;
-                            const infoI = document.getElementById('infoIglesia'); if (infoI) infoI.textContent = iglesiaName;
-                        }
+                await cargarEventos();
+                await cargarPersonas();
+                await cargarItems();
 
-                        // Responsable: similar handling
-                        const selResp = document.getElementById('responsable');
-                        let respId = '';
-                        let respName = '';
-                        if (prestamo.responsable && typeof prestamo.responsable === 'object') {
-                            respId = prestamo.responsable._id || '';
-                            respName = prestamo.responsable.nombreCompleto || (prestamo.responsable.nombres ? (prestamo.responsable.nombres + ' ' + (prestamo.responsable.apellidos || '')) : '');
-                        } else {
-                            respId = prestamo.responsable || '';
-                            respName = prestamo.responsable || '';
-                        }
-                        if (selResp) {
-                            const existsR = Array.from(selResp.options).some(o => o.value === respId);
-                            if (existsR) {
-                                selResp.value = respId;
-                            } else {
-                                selResp.options[0].text = respName || 'Seleccionado';
-                                selResp.options[0].value = respId || '';
-                                selResp.value = respId || '';
-                            }
-                            selResp.disabled = true;
-                            const infoR = document.getElementById('infoResponsable'); if (infoR) infoR.textContent = respName;
-                        }
+                document.getElementById('idPrestamo').value = p._id;
+                document.getElementById('nombrePrestamo').value = p.nombrePrestamo || "";
+                document.getElementById('fechaDevolucionPrevista').value = p.fechaDevolucionPrevista.split('T')[0];
+                document.getElementById('observaciones').value = p.observaciones || "";
+                document.getElementById('estadoActual').value = p.estadoActual || "Activo";
+                document.getElementById('evento').value = p.evento?._id || "";
+                document.getElementById('responsable').value = p.responsable?._id || "";
 
-                        document.getElementById('ubicacion').value = prestamo.ubicacion || '';
-                        document.getElementById('estadoActual').value = prestamo.estadoActual || 'Activo';
-                        document.getElementById('observaciones').value = prestamo.observaciones || '';
+                const lista = document.getElementById('listaItems');
+                lista.innerHTML = "";
 
-                    // Cargar participantes
-                    const container = document.getElementById('participantesContainer');
-                    container.innerHTML = '';
+                for (const it of p.items) {
+                    const fila = await agregarItem();
+                    const select = fila.querySelector('.item');
 
-                    if (prestamo.participantes && prestamo.participantes.length > 0) {
-                        prestamo.participantes.forEach(p => {
-                            const participanteDiv = document.createElement('div');
-                            participanteDiv.className = 'participante-item mb-3 p-3 border rounded';
-                            participanteDiv.innerHTML = `
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <label class="form-label">Persona *</label>
-                                    <select class="form-control persona" required>
-                                        <option value="">Seleccionar...</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Rol *</label>
-                                    <input type="text" class="form-control rol" value="${p.rol}" required>
-                                </div>
-                            </div>
-                            <button type="button" class="btn btn-sm btn-danger" onclick="eliminarParticipante(this)">
-                                <i class="bi bi-trash"></i> Eliminar
-                            </button>
-                        `;
-                            container.appendChild(participanteDiv);
-                            // populate select options and set selected value
-                            const sel = participanteDiv.querySelector('.persona');
-                            copyResponsableOptionsTo(sel);
-                            const personaId = (p.persona && typeof p.persona === 'object') ? (p.persona._id || '') : (p.persona || '');
-                            if (personaId) sel.value = personaId;
-                        });
+                    if (select.options.length <= 1) {
+                        await cargarItemsEnSelect(select);
                     }
 
-                    document.getElementById('tituloModal').textContent = 'Editar Préstamo';
-                    editando = true;
-                    modalPrestamo.show();
+                    select.value = it.item?._id || "";
+                    fila.querySelector('.cantidad').value = it.cantidad;
                 }
+
+                document.getElementById('tituloModal').innerText = "Editar Préstamo";
+                modalPrestamo.show();
+
             } catch (error) {
-                console.error('Error al obtener préstamo:', error);
+                console.error("Error al editar préstamo:", error);
             }
         }
 
         async function eliminarPrestamo(id, nombre) {
-            if (!confirm(`¿Estás seguro de que deseas eliminar el préstamo "${nombre}"?`)) {
-                return;
-            }
+            if (!confirm(`¿Estás seguro de que deseas eliminar ${nombre}?`)) return;
 
             try {
-                const respuesta = await fetch(`/api/prestamos/${id}`, { method: 'DELETE' });
-                const datos = await respuesta.json();
+                const resp = await fetch(`/api/prestamos/${id}`, { method: 'DELETE' });
+                const datos = await resp.json();
 
                 if (datos.ok) {
                     alert('Préstamo eliminado correctamente');
@@ -646,5 +507,6 @@
                 console.error('Error al eliminar:', error);
             }
         }
+
     </script>
 </body>

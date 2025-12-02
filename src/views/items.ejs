@@ -10,12 +10,21 @@
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h2">Gestión de Items</h1>
-        <button class="btn btn-teal" data-bs-toggle="modal" data-bs-target="#modalItem">
-            <i class="bi bi-plus-circle"></i> Nuevo Item
-        </button>
+
+        <div class="d-flex gap-2">
+            <select id="filtroCategoria" class="form-select" style="width: 200px;" onchange="cargarItems()">
+                <option value="">Todas las categorías</option>
+            </select>
+            <a href="/categorias" class="btn btn-secondary">
+                <i class="bi bi-tags"></i> Gestionar Categorías
+            </a>
+            <button class="btn btn-teal" data-bs-toggle="modal" data-bs-target="#modalItem">
+                <i class="bi bi-plus-circle"></i> Nuevo Item
+            </button>
+        </div>
+
     </div>
 
-    <!-- Tabla -->
     <div class="card shadow-sm">
         <div class="card-body">
             <div class="table-responsive">
@@ -39,7 +48,6 @@
         </div>
     </div>
 
-    <!-- Modal Crear/Editar -->
     <div class="modal fade" id="modalItem" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -92,16 +100,11 @@
         const modalItem = new bootstrap.Modal(document.getElementById('modalItem'));
         let editando = false;
 
-        // Cargar lista al iniciar
+        cargarCategoriasFiltro();
         cargarItems();
 
-        // Botón guardar
         document.getElementById('btnGuardar').addEventListener('click', guardarItem);
-
-        // Cargar categorías al abrir el modal
         document.getElementById('modalItem').addEventListener('show.bs.modal', cargarCategorias);
-
-        // Limpiar modal al cerrar
         document.getElementById('modalItem').addEventListener('hidden.bs.modal', () => {
             document.getElementById('formItem').reset();
             document.getElementById('idItem').value = '';
@@ -109,10 +112,16 @@
             editando = false;
         });
 
-        // Cargar items
         async function cargarItems() {
             try {
-                const respuesta = await fetch('/api/items');
+                const categoria = document.getElementById('filtroCategoria').value;
+                let url = '/api/items';
+
+                if (categoria) {
+                    url += `?categoria=${encodeURIComponent(categoria)}`;
+                }
+
+                const respuesta = await fetch(url);
                 const datos = await respuesta.json();
 
                 const cuerpoTabla = document.getElementById('cuerpoTabla');
@@ -127,7 +136,7 @@
                         const fila = document.createElement('tr');
                         fila.innerHTML = `
                             <td><strong>${item.nombreItem}</strong></td>
-                            <td>${item.categoria}</td>
+                            <td>${item.categoria?.nombre || 'Sin categoría'}</td>
                             <td>${item.descripcion}</td>
                             <td>
                                 <span class="badge ${item.estado === 'Activo'
@@ -156,11 +165,10 @@
             }
         }
 
-        // Guardar o actualizar
         async function guardarItem() {
             const id = document.getElementById('idItem').value.trim();
             const nombreItem = document.getElementById('nombreItem').value.trim();
-            const categoria = document.getElementById('categoria').value.trim();
+            const categoria = document.getElementById('categoria').value;
             const descripcion = document.getElementById('descripcion').value.trim();
             const estado = document.getElementById('estado').value;
 
@@ -196,7 +204,6 @@
             }
         }
 
-        // Editar
         async function editarItem(id) {
             try {
                 const respuesta = await fetch(`/api/items/${id}`);
@@ -209,12 +216,12 @@
 
                 const item = datos.data;
 
-                await cargarCategorias(); 
+                await cargarCategorias();
 
                 document.getElementById('idItem').value = item._id;
                 document.getElementById('nombreItem').value = item.nombreItem;
                 document.getElementById('descripcion').value = item.descripcion;
-                document.getElementById('categoria').value = item.categoria;
+                document.getElementById('categoria').value = item.categoria?._id;
                 document.getElementById('estado').value = item.estado;
 
                 editando = true;
@@ -226,7 +233,6 @@
             }
         }
 
-        // Eliminar
         async function eliminarItem(id, nombre) {
             if (!confirm(`¿Estás seguro de que deseas eliminar ${nombre}?`)) {
                 return;
@@ -253,12 +259,12 @@
                 const datos = await resp.json();
 
                 const select = document.getElementById('categoria');
-                select.innerHTML = ''; // Limpia el select
+                select.innerHTML = ''; 
 
                 if (datos.ok && datos.data.length > 0) {
                     datos.data.forEach(cat => {
                         const option = document.createElement('option');
-                        option.value = cat.nombre;
+                        option.value = cat._id;
                         option.textContent = cat.nombre;
                         select.appendChild(option);
                     });
@@ -273,6 +279,29 @@
                 console.error("Error cargando categorías:", error);
             }
         }
+
+        async function cargarCategoriasFiltro() {
+            try {
+                const resp = await fetch('/api/categorias');
+                const datos = await resp.json();
+
+                const filtro = document.getElementById('filtroCategoria');
+                filtro.innerHTML = '<option value="">Todas las categorías</option>';
+
+                if (datos.ok && datos.data.length > 0) {
+                    datos.data.forEach(cat => {
+                        const option = document.createElement('option');
+                        option.value = cat._id;
+                        option.textContent = cat.nombre;
+                        filtro.appendChild(option);
+                    });
+                }
+
+            } catch (error) {
+                console.error("Error cargando categorías:", error);
+            }
+        }
+
 
     </script>
 </body>

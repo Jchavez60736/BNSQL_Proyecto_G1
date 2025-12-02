@@ -9,11 +9,9 @@ const itemSchema = new mongoose.Schema(
             minlength: [3, 'El nombre del ítem debe tener al menos 3 caracteres']
         },
         categoria: {
-            type: String,
-            required: [true, 'La categoría del ítem es obligatoria'],
-            trim: true,
-            // si más adelante creamos categorías fijas, podríamos usar enum
-            enum: ['Tecnología', 'Mobiliario', 'Audio/Video', 'Otro']
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Categoria',
+            required: [true, 'La categoría del ítem es obligatoria']
         },
         descripcion: {
             type: String,
@@ -27,11 +25,11 @@ const itemSchema = new mongoose.Schema(
     },
     {
         collection: 'items',
-        timestamps: true // createdAt y updatedAt automáticos
+        timestamps: true 
     }
 );
 
-// Índices recomendados
+
 itemSchema.index({ nombreItem: 1 });
 itemSchema.index({ categoria: 1 });
 

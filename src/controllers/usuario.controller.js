@@ -33,6 +33,11 @@ const obtenerUsuarios = async (req, res) => {
         if (rol) filtro.rol = rol;
         if (estado) filtro.estado = estado;
 
+        if (req.session.usuarioId) {
+            filtro._id = {$ne: req.session.usuarioId};
+        }
+        
+
         const usuarios = await Usuario.find(filtro).sort({ usuario: 1 });
 
         return res.json({

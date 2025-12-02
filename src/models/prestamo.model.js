@@ -1,64 +1,46 @@
 const mongoose = require('mongoose');
 
-const participanteSchema = new mongoose.Schema(
+const itemsSchema = new mongoose.Schema(
     {
-        persona: {
+        item: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Persona',
-            required: [true, 'La persona participante es obligatoria']
+            ref: 'Item',
+            required: [true, 'El identificador del item es obligatorio']
         },
-        rol: {
-            type: String,
-            required: [true, 'El rol del participante es obligatorio'],
-            trim: true,
-            minlength: [3, 'El rol debe tener al menos 3 caracteres']
+        cantidad: {
+            type: Number,
+            min: [1, 'La cantidad mínima prestada debe ser 1'],
+            required: [true, 'La cantidad prestada es obligatoria']
         }
     },
-    { _id: false } // no necesitamos _id dentro del subdocumento
+    { _id: false } 
 );
 
 const prestamoSchema = new mongoose.Schema(
     {
         nombrePrestamo: {
             type: String,
-            required: [true, 'El nombre del préstamo o actividad es obligatorio'],
-            trim: true,
-            minlength: [3, 'El nombre debe tener al menos 3 caracteres']
+            required: true
         },
-        descripcion: {
-            type: String,
-            trim: true
+        evento: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Evento', 
+            required: [true, 'El evento es obligatorio']
         },
-        fechaInicio: {
+        fechaPrestamo: {
             type: Date,
-            required: [true, 'La fecha de inicio es obligatoria']
+            default: Date.now
         },
-        fechaFin: {
+        fechaDevolucionPrevista: {
             type: Date,
-            validate: {
-                validator: function (value) {
-                    // fechaFin puede estar vacía, pero si viene, no puede ser antes de fechaInicio
-                    return !value || value >= this.fechaInicio;
-                },
-                message: 'La fecha de fin no puede ser anterior a la fecha de inicio'
-            }
-        },
-        iglesiaAsociada: {
-            type:  mongoose.Schema.Types.ObjectId,
-            trim: true,
-            ref: 'Iglesia',
-            required: true // opcional, si siempre debe existir
+            required: [true, 'La fecha de devolución prevista es obligatoria']
         },
         responsable: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Persona',
             required: [true, 'La persona responsable es obligatoria']
         },
-        ubicacion: {
-            type: String,
-            trim: true
-        },
-        participantes: [participanteSchema],
+        items: [itemsSchema],
         observaciones: {
             type: String,
             trim: true
@@ -67,24 +49,13 @@ const prestamoSchema = new mongoose.Schema(
             type: String,
             enum: ['Pendiente', 'Activo', 'Finalizado', 'Cancelado'],
             default: 'Pendiente'
-        },
-        fechaRegistro: {
-            type: Date,
-            default: Date.now
         }
     },
     {
         collection: 'prestamos',
-        timestamps: true // createdAt y updatedAt automáticos
+        timestamps: true 
     }
 );
 
-// Índices recomendados
-prestamoSchema.index({ nombrePrestamo: 1 });
-prestamoSchema.index({ fechaInicio: -1 });
-prestamoSchema.index({ iglesiaAsociada: 1 });
-prestamoSchema.index({ responsable: 1 });
-
 const Prestamo = mongoose.model('Prestamo', prestamoSchema);
-
 module.exports = Prestamo;

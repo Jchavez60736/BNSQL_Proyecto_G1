@@ -45,11 +45,10 @@ const eventoSchema = new mongoose.Schema(
     },
     {
         collection: 'eventos',
-        timestamps: true // createdAt y updatedAt automáticos
+        timestamps: true 
     }
 );
 
-// Índices recomendados para búsquedas
 eventoSchema.index({ nombreEvento: 1 });
 eventoSchema.index({ fechaInicio: 1 });
 

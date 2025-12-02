@@ -1,0 +1,212 @@
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/home">Inicio</a></li>
+            <li class="breadcrumb-item"><a href="/items">Items</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Categorias</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">Gestión de Categorías</h1>
+        <button class="btn btn-teal" data-bs-toggle="modal" data-bs-target="#modalCategoria">
+            <i class="bi bi-plus-circle"></i> Nueva Categoría
+        </button>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="tablaCategorias">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nombre de Categoría</th>
+                            <th>Descripción</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoTabla"></tbody>
+                </table>
+            </div>
+
+            <div id="sinDatos" class="alert alert-info text-center mt-3" style="display:none;">
+                No hay categorías registradas aún.
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalCategoria" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tituloModal">Nueva Categoría</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <form id="formCategoria">
+
+                        <input type="hidden" id="idCategoria">
+
+                        <div class="mb-3">
+                            <label class="form-label">Nombre de la Categoría *</label>
+                            <input type="text" class="form-control" id="nombre" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Descripción *</label>
+                            <input type="text" class="form-control" id="descripcion" required>
+                        </div>
+
+                    </form>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-teal" id="btnGuardar">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const modalCategoria = new bootstrap.Modal(document.getElementById('modalCategoria'));
+        let editando = false;
+
+        cargarCategorias();
+
+        document.getElementById('btnGuardar').addEventListener('click', guardarCategoria);
+
+        document.getElementById('modalCategoria').addEventListener('hidden.bs.modal', () => {
+            document.getElementById('formCategoria').reset();
+            document.getElementById('idCategoria').value = '';
+            document.getElementById('tituloModal').textContent = 'Nueva Categoría';
+            editando = false;
+        });
+
+        async function cargarCategorias() {
+            try {
+                const respuesta = await fetch('/api/categorias');
+                const datos = await respuesta.json();
+
+                const cuerpoTabla = document.getElementById('cuerpoTabla');
+                const sinDatos = document.getElementById('sinDatos');
+
+                cuerpoTabla.innerHTML = '';
+
+                if (datos.ok && datos.data.length > 0) {
+                    sinDatos.style.display = 'none';
+
+                    datos.data.forEach(categoria => {
+                        const fila = document.createElement('tr');
+                        fila.innerHTML = `
+                            <td><strong>${categoria.nombre}</strong></td>
+                            <td>${categoria.descripcion}</td>
+                            <td>
+                                <button class="btn btn-sm btn-warning" onclick="editarCategoria('${categoria._id}')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="eliminarCategoria('${categoria._id}', '${categoria.nombre}')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        `;
+                        cuerpoTabla.appendChild(fila);
+                    });
+                } else {
+                    sinDatos.style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Error al cargar categorias:', error);
+            }
+        }
+
+        async function guardarCategoria() {
+            const id = document.getElementById('idCategoria').value.trim();
+            const nombre = document.getElementById('nombre').value.trim();
+            const descripcion = document.getElementById('descripcion').value.trim();
+
+            if (!nombre || !descripcion) {
+                alert('Todos los campos obligatorios deben completarse');
+                return;
+            }
+
+            const datos = { nombre, descripcion };
+
+            try {
+                const url = editando ? `/api/categorias/${id}` : '/api/categorias';
+                const metodo = editando ? 'PUT' : 'POST';
+
+                const respuesta = await fetch(url, {
+                    method: metodo,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos)
+                });
+
+                const resultado = await respuesta.json();
+
+                if (resultado.ok) {
+                    alert(editando ? 'Categoria actualizado correctamente' : 'Categoria creada correctamente');
+                    modalCategoria.hide();
+                    cargarCategorias();
+                } else {
+                    alert('Error: ' + resultado.msg);
+                }
+            } catch (error) {
+                console.error('Error al guardar:', error);
+                alert('Error al guardar el Categoria');
+            }
+        }
+
+        async function editarCategoria(id) {
+            try {
+                const respuesta = await fetch(`/api/categorias/${id}`);
+                const datos = await respuesta.json();
+
+                if (!datos.ok) {
+                    alert('No se pudo cargar la categoria');
+                    return;
+                }
+
+                const categoria = datos.data;
+
+                await cargarCategorias();
+
+                document.getElementById('idCategoria').value = categoria._id;
+                document.getElementById('nombre').value = categoria.nombre;
+                document.getElementById('descripcion').value = categoria.descripcion;
+
+                editando = true;
+                document.getElementById('tituloModal').textContent = 'Editar Categoría';
+                modalCategoria.show();
+
+            } catch (error) {
+                console.error('Error al obtener categoria:', error);
+            }
+        }
+
+        async function eliminarCategoria(id, nombre) {
+            if (!confirm(`¿Estás seguro de que deseas eliminar ${nombre}?`)) {
+                return;
+            }
+
+            try {
+                const respuesta = await fetch(`/api/categorias/${id}`, { method: 'DELETE' });
+                const datos = await respuesta.json();
+
+                if (datos.ok) {
+                    alert('Categoría eliminado correctamente');
+                    cargarCategorias();
+                } else {
+                    alert('Error: ' + datos.msg);
+                }
+            } catch (error) {
+                console.error('Error al eliminar:', error);
+            }
+        }
+
+    </script>
+</body>

@@ -134,6 +134,17 @@ app.get('/items', ensureAuth, (req, res) => {
     });
 });
 
+// Vista de categorias
+app.get('/categorias', ensureAuth, (req, res) => {
+    res.render('categorias', {
+        layout: 'layout',
+        titulo: "Gestión de Categorías",
+        nombreCompleto: req.session.nombreCompleto,
+        rol: req.session.rol
+    });
+});
+
+
 // Vista de eventos
 app.get('/eventos', ensureAuth, (req, res) =>{
     res.render('eventos', {

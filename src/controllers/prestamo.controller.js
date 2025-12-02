@@ -1,7 +1,6 @@
 // controllers/prestamo.controller.js
 const Prestamo = require('../models/prestamo.model');
 
-// Crear préstamo
 const crearPrestamo = async (req, res) => {
     try {
         const datos = req.body;
@@ -23,23 +22,13 @@ const crearPrestamo = async (req, res) => {
     }
 };
 
-// Obtener todos los préstamos
 const obtenerPrestamos = async (req, res) => {
     try {
-        const { iglesia, estado } = req.query;
-        const filtro = {};
-
-        if (iglesia) {
-            filtro.iglesiaAsociada = iglesia;
-        }
-        if (estado) {
-            filtro.estadoActual = estado;
-        }
-
-        const prestamos = await Prestamo.find(filtro)
-            .sort({ fechaInicio: -1 })
+        const prestamos = await Prestamo.find()
+            .sort({ fechaPrestamo: -1 })
+            .populate('evento')
             .populate('responsable')
-            .populate('participantes.persona');
+            .populate('items.item');
 
         return res.json({
             ok: true,
@@ -54,14 +43,15 @@ const obtenerPrestamos = async (req, res) => {
     }
 };
 
-// Obtener préstamo por ID
 const obtenerPrestamoPorId = async (req, res) => {
     try {
         const { id } = req.params;
 
         const prestamo = await Prestamo.findById(id)
+            .populate('evento')
             .populate('responsable')
-            .populate('participantes.persona');
+            .populate('items.item');
+
 
         if (!prestamo) {
             return res.status(404).json({
@@ -83,7 +73,6 @@ const obtenerPrestamoPorId = async (req, res) => {
     }
 };
 
-// Actualizar préstamo
 const actualizarPrestamo = async (req, res) => {
     try {
         const { id } = req.params;
@@ -116,7 +105,6 @@ const actualizarPrestamo = async (req, res) => {
     }
 };
 
-// Eliminar préstamo 
 const eliminarPrestamo = async (req, res) => {
     try {
         const { id } = req.params;
