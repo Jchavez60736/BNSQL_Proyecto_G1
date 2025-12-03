@@ -1,7 +1,6 @@
 <body>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Breadcrumb -->
     <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="/home">Inicio</a></li>
@@ -9,7 +8,6 @@
         </ol>
     </nav>
 
-    <!-- Encabezado -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h2">Gestión de Proveedores</h1>
         <button class="btn btn-teal" data-bs-toggle="modal" data-bs-target="#modalProveedor">
@@ -17,7 +15,6 @@
         </button>
     </div>
 
-    <!-- Tabla -->
     <div class="card shadow-sm">
         <div class="card-body">
             <div class="table-responsive">
@@ -29,22 +26,18 @@
                             <th>Teléfono</th>
                             <th>Correo</th>
                             <th>Dirección</th>
-                            <th>Observaciones</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="cuerpoTabla">
-                        <!-- Aquí se llenarán los datos -->
-                    </tbody>
+                    <tbody id="cuerpoTabla"></tbody>
                 </table>
             </div>
-            <div id="sinDatos" class="alert alert-info text-center mt-3">
+            <div id="sinDatos" class="alert alert-info text-center mt-3" style="display:none;">
                 No hay proveedores registrados aún.
             </div>
         </div>
     </div>
 
-    <!-- Modal Crear/Editar Proveedor -->
     <div class="modal fade" id="modalProveedor" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -60,7 +53,7 @@
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Nombre del Proveedor *</label>
                                 <input type="text" class="form-control" id="nombreProveedor"
-                                    placeholder="Ej: Suministros ABC" required>
+                                    placeholder="Ej: Asociación ABC" required>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Persona Contacto *</label>
@@ -102,7 +95,6 @@
         </div>
     </div>
 
-    <!-- Modal Detalles Proveedor -->
     <div class="modal fade" id="modalDetalles" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -120,146 +112,129 @@
     <script>
         const modalProveedor = new bootstrap.Modal(document.getElementById('modalProveedor'));
         const modalDetalles = new bootstrap.Modal(document.getElementById('modalDetalles'));
-        const sinDatos = document.getElementById('sinDatos');
+        let editando = false;
 
-        document.getElementById('btnGuardar').addEventListener('click', guardarProveedor);
+        cargarProveedores();
 
-        // Limpiar modal al cerrarse
         document.getElementById('modalProveedor').addEventListener('hidden.bs.modal', () => {
             document.getElementById('formProveedor').reset();
             document.getElementById('idProveedor').value = "";
             document.getElementById('tituloModal').innerText = "Nuevo Proveedor";
+            editando = false;
         });
-
-        cargarProveedores();
+        document.getElementById('btnGuardar').addEventListener('click', guardarProveedor);
 
         async function cargarProveedores() {
-            try {
-                const res = await fetch('/api/proveedores');
-                const datos = await res.json();
+            const res = await fetch('/api/proveedores');
+            const datos = await res.json();
 
-                const cuerpo = document.getElementById('cuerpoTabla');
-                cuerpo.innerHTML = "";
+            const cuerpoTabla = document.getElementById('cuerpoTabla');
+            const sinDatos = document.getElementById('sinDatos');
 
-                const lista = Array.isArray(datos.data) ? datos.data : [];
+            cuerpoTabla.innerHTML = "";
 
-                if (!datos.ok || lista.length === 0) {
-                    sinDatos.style.display = "table-footer-group";
-                    return;
-                }
-                sinDatos.style.display = "none";
+            if (datos.ok && datos.data.length > 0) {
+                sinDatos.style.display = 'none';
 
-                lista.forEach(p => {
-                    const direccionCorta = p.direccion ? (p.direccion.length > 60 ? p.direccion.slice(0, 57) + '...' : p.direccion) : '';
-                    const observacionesCorta = p.observaciones ? (p.observaciones.length > 30 ? p.observaciones.slice(0, 27) + '...' : p.observaciones) : '';
-
-                    const fila = document.createElement('tr');
-                    fila.innerHTML = `
-                    <td>${escapeHtml(p.nombreProveedor)}</td>
-                    <td>${escapeHtml(p.personaContacto)}</td>
-                    <td>${escapeHtml(p.telefono)}</td>
-                    <td>${escapeHtml(p.correo)}</td>
-                    <td title="${escapeHtml(p.direccion)}">${escapeHtml(direccionCorta)}</td>
-                    <td title="${escapeHtml(p.observaciones)}">${escapeHtml(observacionesCorta)}</td>
-                    <td>
-                        <button class="btn btn-sm btn-info" onclick="verDetalles('${p._id}')">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                        <button class="btn btn-sm btn-warning" onclick="editarProveedor('${p._id}')">
-                            <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger" onclick="eliminarProveedor('${p._id}')">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </td>
-                `;
-                    cuerpo.appendChild(fila);
+                datos.data.forEach(p => {
+                    cuerpoTabla.innerHTML += `
+                    <tr>
+                        <td>${p.nombreProveedor}</td>
+                        <td>${p.personaContacto}</td>
+                        <td>${p.telefono}</td>
+                        <td>${p.correoElectronico}</td>
+                        <td>${p.direccion}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="verDetalles('${p._id}')"><i class="bi bi-eye"></i></button>
+                            <button class="btn btn-sm btn-warning" onclick="editarProveedor('${p._id}')"><i class="bi bi-pencil"></i></button>
+                            <button class="btn btn-sm btn-danger" onclick="eliminarProveedor('${p._id}')"><i class="bi bi-trash"></i></button>
+                        </td>
+                    </tr>
+                    `;
                 });
-            } catch (error) {
-                console.error('Error al cargar proveedores:', error);
+            } else {
+                sinDatos.style.display = 'block';
             }
         }
 
         async function guardarProveedor() {
             const id = document.getElementById('idProveedor').value;
+            const nombreProveedor = document.getElementById('nombreProveedor').value.trim();
+            const personaContacto = document.getElementById('personaContacto').value.trim();
+            const telefono = document.getElementById('telefono').value.trim();
+            const correoElectronico = document.getElementById('correo').value.trim();
+            const direccion = document.getElementById('direccion').value.trim();
+            const observaciones = document.getElementById('observaciones').value.trim();
 
-            const datos = {
-                nombreProveedor: document.getElementById('nombreProveedor').value.trim(),
-                personaContacto: document.getElementById('personaContacto').value.trim(),
-                telefono: document.getElementById('telefono').value.trim(),
-                correo: document.getElementById('correo').value.trim(),
-                direccion: document.getElementById('direccion').value.trim(),
-                observaciones: document.getElementById('observaciones').value.trim()
-            };
-
-            if (!datos.nombreProveedor || !datos.personaContacto || !datos.telefono || !datos.correo || !datos.direccion) {
+            if (!nombreProveedor || !personaContacto || !telefono || !correoElectronico || !direccion) {
                 alert('Por favor complete los campos obligatorios (*)');
                 return;
             }
 
-            try {
-                const res = await fetch('/api/proveedores' + (id ? '/' + id : ''), {
-                    method: id ? 'PUT' : 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(datos)
-                });
+            const datos = { nombreProveedor, personaContacto, telefono, correoElectronico, direccion, observaciones };
 
-                const resultado = await res.json();
-                if (resultado.ok) {
-                    modalProveedor.hide();
-                    cargarProveedores();
-                } else {
-                    alert(resultado.msg || 'Ocurrió un error');
-                }
-            } catch (error) {
-                console.error('Error al guardar proveedor:', error);
-                alert('Error al guardar el proveedor');
+            const url = editando ? `/api/proveedores/${id}` : '/api/proveedores';
+            const metodo = editando ? 'PUT' : 'POST';
+
+            const res = await fetch(url, {
+                method: metodo,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            });
+
+            const data = await res.json();
+
+            if (data.ok) {
+                alert(editando ? 'Proveedor actualizado correctamente' : 'Proveedor creado correctamente');
+                modalProveedor.hide();
+                cargarProveedores();
+            } else {
+                alert('Error: ' + data.msg);
             }
         }
 
         async function editarProveedor(id) {
-            try {
-                const res = await fetch('/api/proveedores/' + id);
-                const data = await res.json();
+            const res = await fetch(`/api/proveedores/${id}`);
+            const datos = await res.json();
 
-                if (!data.ok) { alert(data.msg || 'Proveedor no encontrado'); return; }
-
-                const p = data.data;
-                document.getElementById('idProveedor').value = p._id;
-                document.getElementById('nombreProveedor').value = p.nombreProveedor || '';
-                document.getElementById('personaContacto').value = p.personaContacto || '';
-                document.getElementById('telefono').value = p.telefono || '';
-                document.getElementById('correo').value = p.correo || '';
-                document.getElementById('direccion').value = p.direccion || '';
-                document.getElementById('observaciones').value = p.observaciones || '';
-                document.getElementById('tituloModal').innerText = "Editar Proveedor";
-                modalProveedor.show();
-            } catch (error) {
-                console.error('Error al obtener proveedor:', error);
-                alert('Error al obtener datos del proveedor');
+            if (!datos.ok) {
+                alert('Proveedor no encontrado');
+                return;
             }
+
+            const p = datos.data;
+            editando = true;
+
+            document.getElementById('idProveedor').value = p._id;
+            document.getElementById('nombreProveedor').value = p.nombreProveedor;
+            document.getElementById('personaContacto').value = p.personaContacto;
+            document.getElementById('telefono').value = p.telefono;
+            document.getElementById('correo').value = p.correoElectronico;
+            document.getElementById('direccion').value = p.direccion;
+            document.getElementById('observaciones').value = p.observaciones;
+
+            document.getElementById('tituloModal').innerText = "Editar Proveedor";
+            modalProveedor.show();
         }
 
         async function verDetalles(id) {
-            try {
-                const res = await fetch('/api/proveedores/' + id);
-                const data = await res.json();
-                if (!data.ok) { alert(data.msg || 'Proveedor no encontrado'); return; }
-
-                const p = data.data;
-                document.getElementById('detallesContent').innerHTML = `
-                <p><strong>Nombre del Proveedor:</strong> ${escapeHtml(p.nombreProveedor)}</p>
-                <p><strong>Persona Contacto:</strong> ${escapeHtml(p.personaContacto)}</p>
-                <p><strong>Teléfono:</strong> ${escapeHtml(p.telefono)}</p>
-                <p><strong>Correo:</strong> ${escapeHtml(p.correo)}</p>
-                <p><strong>Dirección:</strong> ${escapeHtml(p.direccion)}</p>
-                <p><strong>Observaciones:</strong> ${escapeHtml(p.observaciones || '-')}</p>
-            `;
-                modalDetalles.show();
-            } catch (error) {
-                console.error('Error al obtener detalles:', error);
-                alert('Error al obtener detalles del proveedor');
+            const res = await fetch('/api/proveedores/' + id);
+            const datos = await res.json();
+            if (!datos.ok) { 
+                alert('Proveedor no encontrado'); 
+                return; 
             }
+
+            const p = datos.data;
+            document.getElementById('detallesContent').innerHTML = `
+                <p><strong>Nombre del Proveedor:</strong> ${p.nombreProveedor}</p>
+                <p><strong>Persona Contacto:</strong> ${p.personaContacto}</p>
+                <p><strong>Teléfono:</strong> ${p.telefono}</p>
+                <p><strong>Correo:</strong> ${p.correoElectronico}</p>
+                <p><strong>Dirección:</strong> ${p.direccion}</p>
+                <p><strong>Observaciones:</strong> ${p.observaciones || '-'}</p>
+            `;
+            modalDetalles.show();
         }
 
         async function eliminarProveedor(id) {
@@ -275,14 +250,5 @@
             }
         }
 
-        function escapeHtml(str) {
-            if (!str && str !== 0) return '';
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;');
-        }
     </script>
 </body>

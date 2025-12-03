@@ -26,9 +26,6 @@
                             <th>Teléfono</th>
                             <th>Correo</th>
                             <th>Pastor Principal</th>
-                            <th>Contacto - Nombre Completo</th>
-                            <th>Contacto - Teléfono</th>
-                            <th>Fecha Registro</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -85,20 +82,7 @@
                                 <label class="form-label">Pastor Principal *</label>
                                 <input type="text" class="form-control" id="pastorPrincipal" required>
                             </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label">Contacto - Nombre Completo *</label>
-                                <input type="text" class="form-control" id="contactoNombreCompleto" required>
-                            </div>
                         </div>
-
-                        <div class="row mt-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Contacto - Teléfono *</label>
-                                <input type="text" class="form-control" id="contactoTelefono" required>
-                            </div>
-                        </div>
-
                     </form>
                 </div>
 
@@ -110,7 +94,6 @@
         </div>
     </div>
 
-    <!-- Modal Detalles -->
     <div class="modal fade" id="modalDetalles" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -131,97 +114,88 @@
     <script>
         const modalIglesia = new bootstrap.Modal(document.getElementById('modalIglesia'));
         const modalDetalles = new bootstrap.Modal(document.getElementById('modalDetalles'));
+        let editando = false;
 
-        document.getElementById('btnGuardar').addEventListener('click', guardarIglesia);
+        cargarIglesias();
 
         document.getElementById('modalIglesia').addEventListener('hidden.bs.modal', () => {
             document.getElementById('formIglesia').reset();
             document.getElementById('idIglesia').value = "";
             document.getElementById('tituloModal').innerText = "Nueva Iglesia";
+            editando = false;
         });
 
-        cargarIglesias();
+        document.getElementById('btnGuardar').addEventListener('click', guardarIglesia);
 
         async function cargarIglesias() {
             const res = await fetch('/api/iglesias');
             const datos = await res.json();
 
-            const cuerpo = document.getElementById('cuerpoTabla');
+            const cuerpoTabla = document.getElementById('cuerpoTabla');
             const sinDatos = document.getElementById('sinDatos');
 
-            cuerpo.innerHTML = "";
+            cuerpoTabla.innerHTML = "";
 
-            if (!datos.ok || datos.data.length === 0) {
-                sinDatos.style.display = "block";
-                return;
+            if (datos.ok && datos.data.length > 0) {
+                sinDatos.style.display = 'none';
+
+                datos.data.forEach(i => {
+                    cuerpoTabla.innerHTML += `
+                        <tr>
+                            <td>${i.nombreIglesia}</td>
+                            <td>${i.direccion}</td>
+                            <td>${i.telefono}</td>
+                            <td>${i.correo}</td>
+                            <td>${i.pastorPrincipal}</td>
+                            <td>
+                                <button class="btn btn-sm btn-info" onclick="verDetalles('${i._id}')"><i class="bi bi-eye"></i></button>
+                                <button class="btn btn-sm btn-warning" onclick="editarIglesia('${i._id}')"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-sm btn-danger" onclick="eliminarIglesia('${i._id}')"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                sinDatos.style.display = 'block';
             }
-
-            sinDatos.style.display = "none";
-
-            datos.data.forEach(i => {
-                const fecha = new Date(i.fechaRegistro).toLocaleDateString();
-
-                const fila = document.createElement('tr');
-                fila.innerHTML = `
-                <td>${i.nombreIglesia}</td>
-                <td>${i.direccion}</td>
-                <td>${i.telefono}</td>
-                <td>${i.correo}</td>
-                <td>${i.pastorPrincipal}</td>
-                <td>${i.contactoNombreCompleto}</td>
-                <td>${i.contactoTelefono}</td>
-                <td>${fecha}</td>
-
-                <td>
-                    <button class="btn btn-sm btn-info" onclick="verDetalles('${i._id}')">
-                        <i class="bi bi-eye"></i>
-                    </button>
-                    <button class="btn btn-sm btn-warning" onclick="editarIglesia('${i._id}')">
-                        <i class="bi bi-pencil"></i>
-                    </button>
-                    <button class="btn btn-sm btn-danger" onclick="eliminarIglesia('${i._id}')">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </td>
-            `;
-                cuerpo.appendChild(fila);
-            });
         }
 
         async function guardarIglesia() {
             const id = document.getElementById('idIglesia').value;
+            const nombreIglesia = document.getElementById('nombreIglesia').value;
+            const direccion = document.getElementById('direccion').value;
+            const telefono = document.getElementById('telefono').value;
+            const correo = document.getElementById('correo').value;
+            const pastorPrincipal = document.getElementById('pastorPrincipal').value;
 
-            const datos = {
-                nombreIglesia: document.getElementById('nombreIglesia').value,
-                direccion: document.getElementById('direccion').value,
-                telefono: document.getElementById('telefono').value,
-                correo: document.getElementById('correo').value,
-                pastorPrincipal: document.getElementById('pastorPrincipal').value,
-                contactoNombreCompleto: document.getElementById('contactoNombreCompleto').value,
-                contactoTelefono: document.getElementById('contactoTelefono').value
-            };
+            const datos = { nombreIglesia, direccion, telefono, correo, pastorPrincipal };
 
-            const res = await fetch('/api/iglesias' + (id ? '/' + id : ''), {
-                method: id ? "PUT" : "POST",
-                headers: { "Content-Type": "application/json" },
+            const url = editando ? `/api/iglesias/${id}` : '/api/iglesias';
+            const metodo = editando ? 'PUT' : 'POST';
+
+            const res = await fetch(url, {
+                method: metodo,
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(datos)
             });
 
             const data = await res.json();
 
             if (data.ok) {
+                alert(editando ? 'Iglesia actualizada correctamente' : 'Iglesia registrada correctamente');
                 modalIglesia.hide();
                 cargarIglesias();
             } else {
-                alert(data.msg);
+                alert('Error: ' + data.msg);
             }
         }
 
         async function editarIglesia(id) {
             const res = await fetch('/api/iglesias/' + id);
-            const data = await res.json();
+            const datos = await res.json();
 
-            const i = data.data;
+            const i = datos.data;
+            editando = true;
 
             document.getElementById('idIglesia').value = i._id;
             document.getElementById('nombreIglesia').value = i.nombreIglesia;
@@ -229,11 +203,8 @@
             document.getElementById('telefono').value = i.telefono;
             document.getElementById('correo').value = i.correo;
             document.getElementById('pastorPrincipal').value = i.pastorPrincipal;
-            document.getElementById('contactoNombreCompleto').value = i.contactoNombreCompleto;
-            document.getElementById('contactoTelefono').value = i.contactoTelefono;
 
-            document.getElementById('tituloModal').innerText = "Editar Iglesia";
-
+            document.getElementById('tituloModal').textContent = "Editar Iglesia";
             modalIglesia.show();
         }
 
@@ -243,14 +214,12 @@
             const i = data.data;
 
             document.getElementById('detallesContent').innerHTML = `
-            <p><strong>Nombre:</strong> ${i.nombreIglesia}</p>
-            <p><strong>Dirección:</strong> ${i.direccion}</p>
-            <p><strong>Correo:</strong> ${i.correo}</p>
-            <p><strong>Teléfono:</strong> ${i.telefono}</p>
-            <p><strong>Pastor Principal:</strong> ${i.pastorPrincipal}</p>
-            <p><strong>Contacto:</strong> ${i.contactoNombreCompleto} (${i.contactoTelefono})</p>
-            <p><strong>Fecha Registro:</strong> ${new Date(i.fechaRegistro).toLocaleString()}</p>
-        `;
+                <p><strong>Nombre:</strong> ${i.nombreIglesia}</p>
+                <p><strong>Dirección:</strong> ${i.direccion}</p>
+                <p><strong>Correo:</strong> ${i.correo}</p>
+                <p><strong>Teléfono:</strong> ${i.telefono}</p>
+                <p><strong>Pastor Principal:</strong> ${i.pastorPrincipal}</p>
+            `;
 
             modalDetalles.show();
         }
