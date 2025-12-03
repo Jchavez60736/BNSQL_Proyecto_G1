@@ -1,20 +1,28 @@
-// controllers/entrada.controller.js
-const Entrada = require('../models/entrada.model');
+// controllers/inventario.controller.js
+const Inventario = require('../models/inventario.model');
 
-const crearEntrada = async (req, res) => {
+const crear = async (req, res) => {
     try {
         const datos = req.body;
 
-        const entrada = new Entrada(datos);
+        const entrada = new Inventario(datos);
         const entradaGuardado = await entrada.save();
 
         return res.status(201).json({
             ok: true,
-            msg: 'Entrada guardada correctamente',
+            msg: 'Entrada guardado en el inventario correctamente',
             data: entradaGuardado
         });
     } catch (error) {
-        console.error('Error al guardar la entrada:', eyrror);
+        console.error('Error al guardar la entrada:', error);
+
+        if (error.code === 11000 && error.keyPattern && error.keyPattern._id) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'Ya existe ese item registrado'
+            });
+        }
+
         return res.status(500).json({
             ok: false,
             msg: 'Error interno al guardar la entrada'
@@ -22,12 +30,10 @@ const crearEntrada = async (req, res) => {
     }
 };
 
-const obtenerEntradas = async (req, res) => {
+const obtener = async (req, res) => {
     try {
-        const entradas = await Entrada.find()
-        .sort({ fechaRegistro: -1 })
-        .populate('item')
-        .populate('proveedor');
+        const entradas = await Inventario.find()
+        .populate('item');
 
         return res.json({
             ok: true,
@@ -42,13 +48,12 @@ const obtenerEntradas = async (req, res) => {
     }
 };
 
-const obtenerEntradaPorId = async (req, res) => {
+const obtenerPorId = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const entrada = await Entrada.findById(id)
-        .populate('item')
-        .populate('proveedor');
+        const entrada = await Inventario.findById(id)
+        .populate('item');
 
         if (!entrada) {
             return res.status(404).json({
@@ -70,12 +75,12 @@ const obtenerEntradaPorId = async (req, res) => {
     }
 };
 
-const actualizarEntrada = async (req, res) => {
+const actualizar = async (req, res) => {
     try {
         const { id } = req.params;
         const datos = req.body;
 
-        const entradaActualizado = await Entrada.findByIdAndUpdate(
+        const entradaActualizado = await Inventario.findByIdAndUpdate(
             id,
             datos,
             { new: true, runValidators: true }
@@ -102,11 +107,11 @@ const actualizarEntrada = async (req, res) => {
     }
 };
 
-const eliminarEntrada = async (req, res) => {
+const eliminar = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const entrada = await Entrada.findByIdAndDelete(id);
+        const entrada = await Inventario.findByIdAndDelete(id);
 
         if (!entrada) {
             return res.status(404).json({
@@ -130,9 +135,9 @@ const eliminarEntrada = async (req, res) => {
 };
 
 module.exports = {
-    crearEntrada,
-    obtenerEntradas,
-    obtenerEntradaPorId,
-    actualizarEntrada,
-    eliminarEntrada
+    crear,
+    obtener,
+    obtenerPorId,
+    actualizar,
+    eliminar
 };

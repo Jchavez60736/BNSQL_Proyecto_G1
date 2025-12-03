@@ -1,3 +1,4 @@
+/*
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 
@@ -16,3 +17,4 @@ class AuthService {
 }
 
 module.exports = new AuthService();
+*/
