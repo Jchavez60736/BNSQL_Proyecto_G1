@@ -1,0 +1,200 @@
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/home">Inicio</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Entradas</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h2">Entradas de Inventario</h1>
+        <button class="btn btn-teal" data-bs-toggle="modal" data-bs-target="#modalEntrada">
+            <i class="bi bi-plus-circle"></i> Nueva Entrada
+        </button>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="tablaEntradas">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Item</th>
+                            <th>Proveedor</th>
+                            <th>Cantidad Ingresada</th>
+                            <th>Fecha de Registro</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoTabla"></tbody>
+                </table>
+            </div>
+            <div id="sinDatos" class="alert alert-info text-center mt-3" style="display:none;">
+                No hay entradas de inventario registradas aún.
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalEntrada" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tituloModal">Nueva Entrada</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formularioEntrada">
+                        <input type="hidden" id="idEntrada">
+
+                        <div class="row">
+                            <div class="col-md-5">
+                                <label for="item" class="form-label">Item *</label>
+                                <select class="form-control" id="item" required>
+                                    <option value="">Seleccionar Item</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-5">
+                                <label for="proveedor" class="form-label">Proveedor *</label>
+                                <select class="form-control" id="proveedor" required>
+                                    <option value="">Seleccionar Proveedor</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-2">
+                                <label for="cantidad" class="form-label">Cantidad *</label>
+                                <input type="number" class="form-control" id="cantidad" min="1" required></input>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-teal" id="btnGuardar">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const modalEntrada = new bootstrap.Modal(document.getElementById('modalEntrada'));
+        let editando = false;
+
+        cargarEntradas();
+
+        document.getElementById('modalEntrada').addEventListener('show.bs.modal', () => {
+            if (!editando) {
+                cargarItems();
+                cargarProveedores();
+            }
+        });
+
+        document.getElementById('modalEntrada').addEventListener('hidden.bs.modal', () => {
+            document.getElementById('formularioEntrada').reset();
+            document.getElementById('idEntrada').value = "";
+            document.getElementById('tituloModal').innerText = "Nueva Entrada";
+            editando = false;
+        });
+
+        document.getElementById('btnGuardar').addEventListener('click', guardarEntrada);
+
+        async function cargarEntradas() {
+            const res = await fetch('/api/entradas');
+            const datos = await res.json();
+
+            const cuerpoTabla = document.getElementById('cuerpoTabla');
+            const sinDatos = document.getElementById('sinDatos');
+
+            cuerpoTabla.innerHTML = '';
+
+            if (datos.ok && datos.data.length > 0) {
+                sinDatos.style.display = 'none';
+
+                datos.data.forEach(e => {
+                    cuerpoTabla.innerHTML += `
+                        <tr>
+                            <td>${e.item.nombreItem}</td>
+                            <td>${e.proveedor.nombreProveedor}</td>
+                            <td>${e.cantidad}</td>
+                            <td>${new Date(e.fechaRegistro).toLocaleDateString('es-CR')}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                sinDatos.style.display = 'block';
+            }
+        }
+
+        async function cargarItems() {
+            const res = await fetch('/api/items');
+            const datos = await res.json();
+
+            const select = document.getElementById('item');
+            select.innerHTML = '<option value="">Seleccionar Item</option>';
+
+            if (datos.ok && datos.data.length > 0) {
+                datos.data.forEach(i => {
+                    const option = document.createElement('option');
+                    option.value = i._id;
+                    option.textContent = `${i.nombreItem} (${i.categoria.nombre})`;
+                    select.appendChild(option);
+                });
+            } else {
+                const option = document.createElement('option');
+                option.textContent = "No hay items registrados";
+                option.disabled = true;
+                select.appendChild(option);
+            }
+        }
+
+        async function cargarProveedores() {
+            const res = await fetch('/api/proveedores');
+            const datos = await res.json();
+
+            const select = document.getElementById('proveedor');
+            select.innerHTML = '<option value="">Seleccionar Proveedor</option>';
+
+            if (datos.ok && datos.data.length > 0) {
+                datos.data.forEach(p => {
+                    const option = document.createElement('option');
+                    option.value = p._id;
+                    option.textContent = p.nombreProveedor;
+                    select.appendChild(option);
+                });
+            } else {
+                const option = document.createElement('option');
+                option.textContent = "No hay proveedores registrados";
+                option.disabled = true;
+                select.appendChild(option);
+            }
+        }
+    
+        async function guardarEntrada() {
+            const id = document.getElementById('idEntrada').value;
+            const item = document.getElementById('item').value;
+            const cantidad = document.getElementById('cantidad').value;
+            const proveedor = document.getElementById('proveedor').value;
+
+            const datos = { item, cantidad, proveedor };
+
+            const url = editando ? `/api/entradas/${id}` : '/api/entradas';
+            const metodo = editando ? 'PUT' : 'POST';
+
+            const res = await fetch(url, {
+                method: metodo,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            });
+
+            const data = await res.json();
+            if (data.ok) {
+                cargarEntradas();
+                modalEntrada.hide();
+                alert(editando ? 'Entrada actualizado correctamente' : 'Entrada guardada correctamente');
+            } else {
+                alert('Error: ' + data.msg);
+            }
+        }
+    </script>
+</body>

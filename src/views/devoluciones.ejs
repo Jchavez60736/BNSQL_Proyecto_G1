@@ -399,8 +399,8 @@
 
             const data = await res.json();
             if (data.ok) {
-                cargarDevoluciones();
                 modalDevolucion.hide();
+                cargarDevoluciones();
                 alert(editando ? 'Devolución actualizada correctamente' : 'Devolución creada correctamente');
             } else {
                 alert('Error: ' + data.msg);

@@ -1,5 +1,4 @@
 // src/controllers/authController.js
-// Ejemplo simplificado
 const Usuario = require('../models/usuario.model');
 const bcrypt = require('bcryptjs');
 
@@ -16,7 +15,6 @@ exports.loginUser = async (req, res) => {
     console.log(' Intento de login con usuario:', usuario);
 
     try {
-        // Buscar usuario por nombre de usuario
         const user = await Usuario.findOne({ usuario });
 
         console.log(' Usuario encontrado:', user ? 'Sí' : 'No');
@@ -30,7 +28,6 @@ exports.loginUser = async (req, res) => {
             });
         }
 
-        // El campo de contraseña en el modelo se llama 'contraseña'
         const storedPassword = user.contraseña;
 
         console.log('Contraseña en BD existe:', !!storedPassword);
@@ -39,7 +36,6 @@ exports.loginUser = async (req, res) => {
         let passwordMatches = false;
 
         if (storedPassword) {
-            // Intentar comparar con bcrypt (si está hasheada)
             try {
                 passwordMatches = await bcrypt.compare(contrasena, storedPassword);
                 console.log('Comparación bcrypt:', passwordMatches);
@@ -48,7 +44,6 @@ exports.loginUser = async (req, res) => {
                 passwordMatches = false;
             }
 
-            // Si la comparación con bcrypt falla, permitir comparación en texto plano (por compatibilidad)
             if (!passwordMatches && contrasena === storedPassword) {
                 console.log(' Comparación en texto plano: Coincide');
                 passwordMatches = true;
@@ -66,7 +61,6 @@ exports.loginUser = async (req, res) => {
             });
         }
 
-        // Autenticación exitosa: establecer sesión
         req.session.usuarioId = user._id;
         req.session.nombreCompleto = user.nombreCompleto || user.nombre || '';
         req.session.rol = user.rol || 'Usuario';
