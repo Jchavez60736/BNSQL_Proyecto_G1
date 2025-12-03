@@ -25,8 +25,8 @@ const crearEvento = async (req, res) => {
 const obtenerEventos = async (req, res) => {
     try {
         const eventos = await Evento.find()
-        .populate('iglesiaAsociada', 'nombreIglesia') 
-        .populate('responsable', 'nombreCompleto');   
+        .populate('iglesiaAsociada') 
+        .populate('responsable');   
 
         return res.json({
             ok: true,
@@ -45,7 +45,9 @@ const obtenerEventoPorId = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const evento = await Evento.findById(id);
+        const evento = await Evento.findById(id)
+        .populate('iglesiaAsociada') 
+        .populate('responsable');   
 
         if (!evento) {
             return res.status(404).json({
