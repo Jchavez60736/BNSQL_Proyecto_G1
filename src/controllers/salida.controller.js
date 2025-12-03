@@ -1,12 +1,37 @@
 // controllers/salida.controller.js
 const Salida = require('../models/salida.model');
+const Inventario = require('../models/inventario.model');
 
 const crearSalida = async (req, res) => {
     try {
         const datos = req.body;
 
-        const salida = new Salida(datos);
-        const salidaGuardado = await salida.save();
+        const cantidad = parseInt(datos.cantidad);
+
+        if(!cantidad || cantidad <= 0) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'La cantidad debe ser un número válido mayor que cero'
+            });
+        }
+
+        const itemInventario = await Inventario.findOne({item: datos.item});
+        if(!itemInventario) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'No se puede registrar la salida. El item no existe en inventario.'
+            });
+        }
+        if(itemInventario.cantidad < cantidad) {
+            return res.status(400).json({
+                ok: false,
+                msg: `Stock insuficiente.\nDisponible: ${itemInventario.cantidad}\nSolicitado: ${cantidad}`
+            });
+        }
+
+        const salidaGuardado = await Salida.create(datos);
+        itemInventario.cantidad -= cantidad;
+        await itemInventario.save();
 
         return res.status(201).json({
             ok: true,

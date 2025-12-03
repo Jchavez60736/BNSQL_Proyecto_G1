@@ -1,12 +1,21 @@
 // controllers/entrada.controller.js
 const Entrada = require('../models/entrada.model');
+const Inventario = require('../models/inventario.model');
 
 const crearEntrada = async (req, res) => {
     try {
         const datos = req.body;
+        const entradaGuardado = await Entrada.create(datos);
+        const itemInventario = await Inventario.findOne({item: datos.item});
 
-        const entrada = new Entrada(datos);
-        const entradaGuardado = await entrada.save();
+        const cantidad = parseInt(datos.cantidad);
+
+        if (itemInventario) {
+            itemInventario.cantidad += cantidad;
+            await itemInventario.save();
+        } else {
+            await Inventario.create({item: datos.item, cantidad});
+        }
 
         return res.status(201).json({
             ok: true,
@@ -14,7 +23,7 @@ const crearEntrada = async (req, res) => {
             data: entradaGuardado
         });
     } catch (error) {
-        console.error('Error al guardar la entrada:', eyrror);
+        console.error('Error al guardar la entrada:', error);
         return res.status(500).json({
             ok: false,
             msg: 'Error interno al guardar la entrada'
