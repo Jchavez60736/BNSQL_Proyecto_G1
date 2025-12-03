@@ -43,44 +43,13 @@ const iglesiaSchema = new mongoose.Schema(
             minlength: [5, 'Debe ingresar el nombre completo del pastor'],
             trim: true,
             description: 'Nombre completo del pastor principal encargado'
-        },
-
-        contactoNombreCompleto: {
-            type: String,
-            required: [true, 'El nombre del contacto principal es obligatorio'],
-            trim: true,
-            validate: {
-                validator: function (value) {
-                    const partes = value.trim().split(/\s+/);
-                    return partes.length === 4; // 2 nombres + 2 apellidos EXACTO
-                },
-                message: 'Debe ingresar exactamente 4 palabras: 2 nombres y 2 apellidos'
-            },
-            description: 'Nombre completo del contacto principal'
-        },
-
-        contactoTelefono: {
-            type: String,
-            required: [true, 'El teléfono del contacto es obligatorio'],
-            match: [/^[0-9]{8}$/, 'El teléfono debe contener exactamente 8 dígitos'],
-            description: 'Número de teléfono del contacto principal'
-        },
-
-        fechaRegistro: {
-            type: Date,
-            default: Date.now,
-            description: 'Fecha en que la iglesia fue registrada en el sistema'
         }
     },
     {
         collection: 'iglesias',
-        timestamps: true, // agrega createdAt y updatedAt
+        timestamps: true,
     }
 );
-
-// Índices recomendados para búsquedas
-iglesiaSchema.index({ nombreIglesia: 1 });
-iglesiaSchema.index({ correo: 1 });
 
 const Iglesia = mongoose.model('Iglesia', iglesiaSchema);
 module.exports = Iglesia;

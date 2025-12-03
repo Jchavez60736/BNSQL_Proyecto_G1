@@ -30,9 +30,7 @@
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="cuerpoTabla">
-
-                    </tbody>
+                    <tbody id="cuerpoTabla"></tbody>
                 </table>
             </div>
             <div id="sinDatos" class="alert alert-info text-center mt-3" style="display:none;">
@@ -107,13 +105,10 @@
                                             </button>
                                         </div>
                                     </div>
-
                                 </div>
-
                                 <button type="button" class="btn btn-sm btn-secondary mt-3" onclick="agregarItem()">
                                     <i class="bi bi-plus"></i> Agregar Item
                                 </button>
-
                             </div>
                         </div>
 
@@ -132,9 +127,7 @@
                                     <option value="Devuelto">Devuelto</option>
                                 </select>
                             </div>
-
                         </div>
-
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -357,7 +350,7 @@
                     <i class="bi bi-trash"></i> Eliminar
                 </button>
             </div>
-        `;
+            `;
 
             lista.appendChild(fila);
             const nuevoSelect = fila.querySelector('.item');
@@ -370,7 +363,6 @@
             btn.closest(".detalle-prestamo-item").remove();
         }
 
-        // Métodos CRUD
         async function verDetalles(id) {
             try {
                 const res = await fetch(`/api/prestamos/${id}`);

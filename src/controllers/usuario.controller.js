@@ -1,7 +1,6 @@
 // controllers/usuario.controller.js
 const Usuario = require('../models/usuario.model');
 
-// Crear usuario
 const crearUsuario = async (req, res) => {
     try {
         const datos = req.body;
@@ -24,7 +23,6 @@ const crearUsuario = async (req, res) => {
     }
 };
 
-// Obtener todos los usuarios (con filtros opcionales)
 const obtenerUsuarios = async (req, res) => {
     try {
         const { rol, estado } = req.query;
@@ -54,7 +52,6 @@ const obtenerUsuarios = async (req, res) => {
     }
 };
 
-// Obtener un usuario por ID
 const obtenerUsuarioPorId = async (req, res) => {
     try {
         const { id } = req.params;
@@ -82,7 +79,6 @@ const obtenerUsuarioPorId = async (req, res) => {
     }
 };
 
-// Actualizar usuario
 const actualizarUsuario = async (req, res) => {
     try {
         const { id } = req.params;
@@ -116,7 +112,6 @@ const actualizarUsuario = async (req, res) => {
     }
 };
 
-// Eliminar usuario 
 const eliminarUsuario = async (req, res) => {
     try {
         const { id } = req.params;

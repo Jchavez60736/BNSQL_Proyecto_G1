@@ -1,7 +1,6 @@
 // controllers/categoria.controller.js
 const Categoria = require('../models/categoria.model');
 
-// Crear categoria
 const crearCategoria = async (req, res) => {
     try {
         const datos = req.body;
@@ -23,7 +22,6 @@ const crearCategoria = async (req, res) => {
     }
 };
 
-// Obtener todas las categorias
 const obtenerCategorias = async (req, res) => {
     try {
         const categorias = await Categoria.find();
@@ -41,8 +39,6 @@ const obtenerCategorias = async (req, res) => {
     }
 };
 
-
-// Obtener categoria por ID
 const obtenerCategoriaPorId = async (req, res) => {
     try {
         const { id } = req.params;
@@ -69,7 +65,6 @@ const obtenerCategoriaPorId = async (req, res) => {
     }
 };
 
-// Actualizar categoria
 const actualizarCategoria = async (req, res) => {
     try {
         const { id } = req.params;

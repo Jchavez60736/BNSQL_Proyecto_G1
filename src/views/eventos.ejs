@@ -43,12 +43,10 @@
     <div class="modal fade" id="modalEvento" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-
                 <div class="modal-header">
                     <h5 class="modal-title" id="tituloModal">Nuevo Evento</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-
                 <div class="modal-body">
                     <form id="formEvento">
                         <input type="hidden" id="idEvento">
@@ -58,36 +56,51 @@
                             <input type="text" class="form-control" id="nombreEvento" required>
                         </div>
 
+
                         <div class="mb-3">
                             <label class="form-label">Descripción</label>
                             <textarea class="form-control" id="descripcion"></textarea>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Fecha de Inicio *</label>
-                            <input type="date" class="form-control" id="fechaInicio" required>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Fecha de Inicio *</label>
+                                    <input type="date" class="form-control" id="fechaInicio" required>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Fecha de Fin *</label>
+                                    <input type="date" class="form-control" id="fechaFin" required>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label">Fecha de Fin *</label>
-                            <input type="date" class="form-control" id="fechaFin" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Ubicación</label>
-                            <input type="text" class="form-control" id="ubicacion">
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Iglesia Asociada *</label>
-                            <select class="form-control" id="iglesiaAsociada" required></select>
-                            <small class="text-muted" id="infoIglesia"></small>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label">Responsable *</label>
-                            <select class="form-control" id="responsable" required></select>
-                            <small class="text-muted" id="infoResponsable"></small>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Ubicación</label>
+                                    <input type="text" class="form-control" id="ubicacion">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="iglesiaAsociada" class="form-label">Iglesia Asociada *</label>
+                                    <select class="form-control" id="iglesiaAsociada" required>
+                                        <option value="">Seleccionar Iglesia</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="responsable" class="form-label">Responsable *</label>
+                                    <select class="form-control" id="responsable" required>
+                                        <option value="">Seleccionar Responsable</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="mb-3">
@@ -106,10 +119,9 @@
                         </div>
                     </form>
                 </div>
-
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button class="btn btn-teal" id="btnGuardar">Guardar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-teal" id="btnGuardar">Guardar</button>
                 </div>
             </div>
         </div>
@@ -121,80 +133,102 @@
 
         cargarEventos();
 
-        document.getElementById('btnGuardar').addEventListener('click', guardarEvento);
+        document.getElementById('modalEvento').addEventListener('show.bs.modal', () => {
+            if (!editando) {
+                cargarIglesias();
+                cargarPersonas();
+            }
+        });
 
         document.getElementById('modalEvento').addEventListener('hidden.bs.modal', () => {
             document.getElementById('formEvento').reset();
-            document.getElementById('idEvento').value = '';
-            
-            const selectIgl = document.getElementById('iglesiaAsociada');
-            if (selectIgl) {
-                selectIgl.disabled = false;
-                const primeraIgl = selectIgl.querySelector('option:first-child');
-                if (primeraIgl) primeraIgl.textContent = 'Seleccionar...';
-            }
-            const selectResp = document.getElementById('responsable');
-            if (selectResp) {
-                selectResp.disabled = false;
-                const primeraResp = selectResp.querySelector('option:first-child');
-                if (primeraResp) primeraResp.textContent = 'Seleccionar...';
-            }
-            document.getElementById('infoIglesia').textContent = '';
-            document.getElementById('infoResponsable').textContent = '';
+            document.getElementById('idEvento').value = "";
             document.getElementById('tituloModal').textContent = 'Nuevo Evento';
             editando = false;
         });
 
+        document.getElementById('btnGuardar').addEventListener('click', guardarEvento);
+
         async function cargarEventos() {
-            try {
-                const resp = await fetch('/api/eventos');
-                const datos = await resp.json();
+            const res = await fetch('/api/eventos');
+            const datos = await res.json();
 
-                const cuerpoTabla = document.getElementById('cuerpoTabla');
-                const sinDatos = document.getElementById('sinDatos');
+            const cuerpoTabla = document.getElementById('cuerpoTabla');
+            const sinDatos = document.getElementById('sinDatos');
 
-                cuerpoTabla.innerHTML = '';
+            cuerpoTabla.innerHTML = '';
 
-                if (datos.ok && datos.data.length > 0) {
-                    sinDatos.style.display = 'none';
+            if (datos.ok && datos.data.length > 0) {
+                sinDatos.style.display = 'none';
 
-                    datos.data.forEach(ev => {
-                        const fila = document.createElement('tr');
-                        fila.innerHTML = `
+                datos.data.forEach(ev => {
+                    cuerpoTabla.innerHTML += `
+                        <tr>
                             <td><strong>${ev.nombreEvento}</strong></td>
-                            <td>${new Date(ev.fechaInicio).toLocaleDateString()}</td>
-                            <td>${new Date(ev.fechaFin).toLocaleDateString()}</td>
-                            <td>${ev.iglesiaAsociada ? ev.iglesiaAsociada.nombreIglesia : ''}</td>
-                            <td>${ev.responsable ? ev.responsable.nombreCompleto : ''}</td>
+                            <td>${new Date(ev.fechaInicio).toLocaleDateString('es-CR')}</td>
+                            <td>${new Date(ev.fechaFin).toLocaleDateString('es-CR')}</td>
+                            <td>${ev.iglesiaAsociada.nombreIglesia}</td>
+                            <td>${ev.responsable.nombreCompleto}</td>
+                            <td>${ev.estado}</td>
                             <td>
-                                <span class="badge ${
-                                    ev.estado === 'Programado' ? 'bg-primary' :
-                                    ev.estado === 'En curso' ? 'bg-warning' :
-                                    ev.estado === 'Finalizado' ? 'bg-success' : 'bg-danger'
-                                }">${ev.estado}</span>
+                                <button class="btn btn-sm btn-info" onclick="verDetalles('${ev._id}')"><i class="bi bi-eye"></i></button>
+                                <button class="btn btn-sm btn-warning" onclick="editarEvento('${ev._id}')"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-sm btn-danger" onclick="eliminarEvento('${ev._id}')"><i class="bi bi-trash"></i></button>
                             </td>
-                            <td>
-                                <button class="btn btn-sm btn-warning" onclick="editarEvento('${ev._id}')">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button class="btn btn-sm btn-danger" onclick="eliminarEvento('${ev._id}', '${ev.nombreEvento}')">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </td>
-                        `;
-                        cuerpoTabla.appendChild(fila);
-                    });
-                } else {
-                    sinDatos.style.display = 'block';
-                }
+                        </tr>
+                    `;
+                });
+            } else {
+                sinDatos.style.display = 'block';
+            }
+        }
 
-            } catch (error) {
-                console.error('Error al cargar eventos:', error);
+        async function cargarIglesias() {
+            const res = await fetch('/api/iglesias');
+            const datos = await res.json();
+
+            const select = document.getElementById('iglesiaAsociada');
+            select.innerHTML = '<option value="">Seleccionar Iglesia</option>';
+
+            if (datos.ok && datos.data.length > 0) {
+                datos.data.forEach(i => {
+                    const option = document.createElement('option');
+                    option.value = i._id;
+                    option.textContent = i.nombreIglesia;
+                    select.appendChild(option);
+                });
+            } else {
+                const option = document.createElement('option');
+                option.textContent = "No hay iglesias registradas";
+                option.disabled = true;
+                select.appendChild(option);
+            }
+        }
+
+        async function cargarPersonas() {
+            const res = await fetch('/api/personas');
+            const datos = await res.json();
+
+            const select = document.getElementById('responsable');
+            select.innerHTML = '<option value="">Seleccionar Responsable</option>';
+
+            if (datos.ok && datos.data.length > 0) {
+                datos.data.forEach(p => {
+                    const option = document.createElement('option');
+                    option.value = p._id;
+                    option.textContent = p.nombreCompleto;
+                    select.appendChild(option);
+                });
+            } else {
+                const option = document.createElement('option');
+                option.textContent = "No hay personas registradas";
+                option.disabled = true;
+                select.appendChild(option);
             }
         }
 
         async function guardarEvento() {
-            const id = document.getElementById('idEvento').value.trim();
+            const id = document.getElementById('idEvento').value;
             const nombreEvento = document.getElementById('nombreEvento').value.trim();
             const descripcion = document.getElementById('descripcion').value.trim();
             const fechaInicio = document.getElementById('fechaInicio').value;
@@ -212,82 +246,54 @@
 
             const datos = { nombreEvento, descripcion, fechaInicio, fechaFin, ubicacion, iglesiaAsociada, responsable, observaciones, estado };
 
-            try {
-                const url = editando ? `/api/eventos/${id}` : '/api/eventos';
-                const metodo = editando ? 'PUT' : 'POST';
+            const url = editando ? `/api/eventos/${id}` : '/api/eventos';
+            const metodo = editando ? 'PUT' : 'POST';
 
-                const respuesta = await fetch(url, {
-                    method: metodo,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(datos)
-                });
+            const respuesta = await fetch(url, {
+                method: metodo,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            });
 
-                const resultado = await respuesta.json();
+            const resultado = await respuesta.json();
 
-                if (resultado.ok) {
-                    alert(editando ? 'Evento actualizado correctamente' : 'Evento creado correctamente');
-                    modalEvento.hide();
-                    cargarEventos();
-                } else {
-                    alert('Error: ' + resultado.msg);
-                }
-            } catch (error) {
-                console.error('Error al guardar:', error);
-                alert('Error al guardar el Evento');
+            if (resultado.ok) {
+                alert(editando ? 'Evento actualizado correctamente' : 'Evento creado correctamente');
+                modalEvento.hide();
+                cargarEventos();
+            } else {
+                alert('Error: ' + resultado.msg);
             }
         }
 
         async function editarEvento(id) {
-            try {
-                const resp = await fetch(`/api/eventos/${id}`);
-                const datos = await resp.json();
+            const res = await fetch(`/api/eventos/${id}`);
+            const datos = await res.json();
 
-                if (!datos.ok) {
-                    alert('No se pudo cargar el evento');
-                    return;
-                }
-
-                const ev = datos.data;
-
-                await cargarIglesias();
-                await cargarPersonas();
-
-                document.getElementById('idEvento').value = ev._id;
-                document.getElementById('nombreEvento').value = ev.nombreEvento;
-                document.getElementById('descripcion').value = ev.descripcion;
-                document.getElementById('fechaInicio').value = ev.fechaInicio.split('T')[0];
-                document.getElementById('fechaFin').value = ev.fechaFin.split('T')[0];
-                document.getElementById('ubicacion').value = ev.ubicacion;
-                document.getElementById('iglesiaAsociada').value = ev.iglesiaAsociada ? ev.iglesiaAsociada._id : '';
-                document.getElementById('responsable').value = ev.responsable ? ev.responsable._id : '';
-                document.getElementById('observaciones').value = ev.observaciones;
-                document.getElementById('estado').value = ev.estado;
-
-                const selectIgl = document.getElementById('iglesiaAsociada');
-                if (selectIgl) {
-                    const primeraIgl = selectIgl.querySelector('option:first-child');
-                    if (primeraIgl) primeraIgl.textContent = ev.iglesiaAsociada ? ev.iglesiaAsociada.nombreIglesia : 'Seleccionar...';
-                    selectIgl.value = ev.iglesiaAsociada ? ev.iglesiaAsociada._id : '';
-                    selectIgl.disabled = true;
-                    document.getElementById('infoIglesia').textContent = ev.iglesiaAsociada ? `(${ev.iglesiaAsociada.nombreIglesia})` : '';
-                }
-
-                const selectResp = document.getElementById('responsable');
-                if (selectResp) {
-                    const primeraResp = selectResp.querySelector('option:first-child');
-                    if (primeraResp) primeraResp.textContent = ev.responsable ? ev.responsable.nombreCompleto : 'Seleccionar...';
-                    selectResp.value = ev.responsable ? ev.responsable._id : '';
-                    selectResp.disabled = true;
-                    document.getElementById('infoResponsable').textContent = ev.responsable ? `(${ev.responsable.nombreCompleto})` : '';
-                }
-
-                editando = true;
-                document.getElementById('tituloModal').textContent = 'Editar Evento';
-                modalEvento.show();
-
-            } catch (error) {
-                console.error('Error al obtener evento:', error);
+            if (!datos.ok) {
+                alert('No se pudo cargar el evento');
+                return;
             }
+
+            const ev = datos.data;
+            editando = true;
+
+            await cargarIglesias();
+            await cargarPersonas();
+
+            document.getElementById('idEvento').value = ev._id;
+            document.getElementById('nombreEvento').value = ev.nombreEvento;
+            document.getElementById('descripcion').value = ev.descripcion;
+            document.getElementById('fechaInicio').value = ev.fechaInicio.split('T')[0];
+            document.getElementById('fechaFin').value = ev.fechaFin.split('T')[0];
+            document.getElementById('ubicacion').value = ev.ubicacion;
+            document.getElementById('iglesiaAsociada').value = ev.iglesiaAsociada._id;
+            document.getElementById('responsable').value = ev.responsable._id;
+            document.getElementById('observaciones').value = ev.observaciones;
+            document.getElementById('estado').value = ev.estado;
+
+            document.getElementById('tituloModal').textContent = 'Editar Evento';
+            modalEvento.show();
         }
 
         async function eliminarEvento(id, nombre) {
@@ -307,53 +313,5 @@
                 console.error('Error al eliminar:', error);
             }
         }
-
-        async function cargarIglesias() {
-            try {
-                const resp = await fetch('/api/iglesias');
-                const datos = await resp.json();
-
-                const select = document.getElementById('iglesiaAsociada');
-                select.innerHTML = '';
-
-                if (datos.ok && datos.data.length > 0) {
-                    datos.data.forEach(iglesia => {
-                        const option = document.createElement('option');
-                        option.value = iglesia._id;
-                        option.textContent = iglesia.nombreIglesia;
-                        select.appendChild(option);
-                    });
-                }
-            } catch (error) {
-                console.error('Error cargando iglesias:', error);
-            }
-        }
-
-        async function cargarPersonas() {
-            try {
-                const resp = await fetch('/api/personas');
-                const datos = await resp.json();
-
-                const select = document.getElementById('responsable');
-                select.innerHTML = '';
-
-                if (datos.ok && datos.data.length > 0) {
-                    datos.data.forEach(persona => {
-                        const option = document.createElement('option');
-                        option.value = persona._id;
-                        option.textContent = persona.nombreCompleto;
-                        select.appendChild(option);
-                    });
-                }
-            } catch (error) {
-                console.error('Error cargando personas:', error);
-            }
-        }
-
-        document.getElementById('modalEvento').addEventListener('show.bs.modal', () => {
-            cargarIglesias();
-            cargarPersonas();
-        });
-
     </script>
 </body>

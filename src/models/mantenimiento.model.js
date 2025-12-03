@@ -13,12 +13,7 @@ const mantenimientoSchema = new mongoose.Schema(
         },
         fechaFin: {
             type: Date,
-            validate: {
-                validator: function (value) {
-                    return !value || value >= this.fechaInicio;
-                },
-                message: 'La fecha de finalización no puede ser anterior a la fecha de inicio'
-            }
+            required: [true, 'La fecha de finalización del mantenimiento es obligatoria']
 
         },
         tipoMantenimiento: {
@@ -33,10 +28,10 @@ const mantenimientoSchema = new mongoose.Schema(
             minlength: [5, 'La descripción debe tener al menos 5 caracteres']
         },
         responsable: {
-            type: String,
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Persona',
             required: [true, 'El responsable del mantenimiento es obligatorio'],
             trim: true
-            // más adelante podrías cambiarlo a ObjectId y ref: 'Usuario'
         },
         resultado: {
             type: String,
@@ -46,10 +41,6 @@ const mantenimientoSchema = new mongoose.Schema(
             type: String,
             trim: true
         },
-        fechaRegistro: {
-            type: Date,
-            default: Date.now
-        },
         estado: {
             type: String,
             enum: ['Activo', 'Cerrado', 'Cancelado'],
@@ -58,13 +49,9 @@ const mantenimientoSchema = new mongoose.Schema(
     },
     {
         collection: 'mantenimientos',
-        timestamps: true  // createdAt y updatedAt automáticos
+        timestamps: true  
     }
 );
-
-// Índices recomendados
-mantenimientoSchema.index({ idItem: 1 });
-mantenimientoSchema.index({ tipoMantenimiento: 1, fechaInicio: -1 });
 
 const Mantenimiento = mongoose.model('Mantenimiento', mantenimientoSchema);
 

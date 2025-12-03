@@ -17,8 +17,7 @@ const personaSchema = new mongoose.Schema(
         telefono: {
             type: String,
             trim: true,
-            match: [/^\d{3}[-\s]?\d{3}[-\s]?\d{4}$/, 
-                'El número de teléfono debe tener 10 dígitos']
+            match: [/^[0-9]{8}$/, 'El teléfono debe contener exactamente 8 dígitos']
         },
         correo: {
             type: String,
@@ -49,12 +48,10 @@ const personaSchema = new mongoose.Schema(
     },
     {
         collection: 'personas',
-        timestamps: true // createdAt y updatedAt automáticos
+        timestamps: true 
     }
 );
 
-// Índices para optimizar consultas
-//personaSchema.index({ cedula: 1 }, { unique: true });
 personaSchema.index({ iglesiaAsociada: 1 });
 
 const Persona = mongoose.model('Persona', personaSchema);

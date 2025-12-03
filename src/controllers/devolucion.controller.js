@@ -24,17 +24,7 @@ const crearDevolucion = async (req, res) => {
 
 const obtenerDevoluciones = async (req, res) => {
     try {
-        const { prestamo, persona } = req.query;
-        const filtro = {};
-
-        if (prestamo) {
-            filtro.idPrestamo = prestamo;
-        }
-        if (persona) {
-            filtro.idPersonaDevuelve = persona;
-        }
-
-        const devoluciones = await Devolucion.find(filtro)
+        const devoluciones = await Devolucion.find()
             .sort({ fechaDevolucion: -1 })
             .populate('idPrestamo')
             .populate('idPersonaDevuelve')

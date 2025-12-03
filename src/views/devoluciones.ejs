@@ -24,16 +24,13 @@
                             <th>Fecha de Devolución</th>
                             <th>Préstamo Asociado</th>
                             <th>Persona Responsable </th>
-                            <th>Responsable</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="cuerpoTabla">
-
-                    </tbody>
+                    <tbody id="cuerpoTabla"></tbody>
                 </table>
             </div>
-            <div id="sinDatos" class="alert alert-info text-center mt-3">
+            <div id="sinDatos" class="alert alert-info text-center mt-3" style="display:none;">
                 No hay devoluciones registradas aún.
             </div>
         </div>
@@ -53,7 +50,7 @@
                             <div class="col-md-4">
                                 <div class="mb-3">
                                     <label for="fechaDevolucion" class="form-label">Fecha Devolución *</label>
-                                    <input type="datetime-local" class="form-control" id="fechaDevolucion" required>
+                                    <input type="date" class="form-control" id="fechaDevolucion" required>
                                     <small class="text-danger" id="errorFechaDevolucion"></small>
                                 </div>
                             </div>
@@ -61,7 +58,7 @@
                                 <div class="mb-3">
                                     <label for="prestamoAsociado" class="form-label">Préstamo Asociado *</label>
                                     <select class="form-control" id="prestamoAsociado" required>
-                                        <option value="">Seleccionar...</option>
+                                        <option value="">Seleccionar Préstamo</option>
                                     </select>
                                     <small class="text-muted" id="infoDevolucion"></small>
                                     <small class="text-danger" id="errorDevolucion"></small>
@@ -71,7 +68,7 @@
                                 <div class="mb-3">
                                     <label for="responsable" class="form-label">Responsable Devolución*</label>
                                     <select class="form-control" id="responsable" required>
-                                        <option value="">Seleccionar...</option>
+                                        <option value="">Seleccionar Responsable</option>
                                     </select>
                                     <small class="text-muted" id="infoResponsable"></small>
                                     <small class="text-danger" id="errorResponsable"></small>
@@ -79,37 +76,46 @@
                             </div>
                         </div>
 
-                        <div class="mb-4">
-                            <h6 class="mb-3">Detalle</h6>
-                            <div id="detalleContainer">
-                                <div class="detalle-item mb-3 p-3 border rounded">
-                                    <div class="row g-3">
-                                        <div class="col-md-4">
+                        <div class="mb-3 mt-4">
+                            <h6 class="mb-3">Detalle de Devolucion</h6>
+                            <div id="detalleContainer" class="p-3 border rounded">
+                                <div id="listaItems">
+                                    <div class="detalle-devolucion-item d-flex gap-3 mb-3">
+                                        <div class="flex-fill">
                                             <label class="form-label">Item *</label>
-                                            <select class="form-control" id="item" required>
-                                                <option value="">Seleccionar </option>
+                                            <select class="form-control item" required>
+                                                <option value="">Seleccionar Item</option>
                                             </select>
                                         </div>
-                                        <div class="col-md-4">
+
+                                        <div class="flex-fill">
                                             <label class="form-label">Cantidad *</label>
-                                            <input type="text" class="form-control rol" required>
+                                            <input type="number" min="1" class="form-control cantidad" required>
                                         </div>
-                                        <div class="col-md-4">
+
+                                        <div class="flex-fill">
                                             <label class="form-label">Estado *</label>
-                                            <input type="text" class="form-control rol" required>
+                                            <select class="form-control estado" required>
+                                                <option value="">Seleccionar Estado</option>
+                                                <option value="Bueno">Bueno</option>
+                                                <option value="Dañado">Dañado</option>
+                                                <option value="Reparación requerida">Reparación requerida</option>
+                                                <option value="Otro">Otro</option>
+                                            </select>
                                         </div>
-                                        <div class="col-12 d-flex justify-content-end">
-                                            <button type="button" class="btn btn-sm btn-danger"
+
+                                        <div class="d-flex align-items-end">
+                                            <button type="button" class="btn btn-md btn-danger"
                                                 onclick="eliminarItem(this)">
                                                 <i class="bi bi-trash"></i> Eliminar
                                             </button>
                                         </div>
                                     </div>
                                 </div>
+                                <button type="button" class="btn btn-sm btn-secondary mt-3" onclick="agregarItem()">
+                                    <i class="bi bi-plus"></i> Agregar Item
+                                </button>
                             </div>
-                            <button type="button" class="btn btn-sm btn-secondary" onclick="agregarItem()">
-                                <i class="bi bi-plus"></i> Agregar Item
-                            </button>
                         </div>
 
                         <div class="mb-3">
@@ -126,18 +132,15 @@
         </div>
     </div>
 
-    <!-- Modal de Detalles -->
     <div class="modal fade" id="modalDetalles" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Detalles del Préstamo</h5>
+                    <h5 class="modal-title">Detalles de la Devolución</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div id="detallesContent">
-                        <!-- Se llenará dinámicamente -->
-                    </div>
+                    <div id="detallesContent"></div>
                 </div>
             </div>
         </div>
@@ -146,475 +149,317 @@
     <script>
         const modalDevolucion = new bootstrap.Modal(document.getElementById('modalDevolucion'));
         const modalDetalles = new bootstrap.Modal(document.getElementById('modalDetalles'));
+
         let editando = false;
+        let itemsCache = null;
 
-        async function cargarIglesias() {
-            const select = document.getElementById('prestamoAsociado');
-            if (!select) return;
-            select.innerHTML = '<option value="">Seleccionar...</option>';
-            try {
-                const res = await fetch('/api/iglesias');
-                const payload = await res.json();
-                const data = Array.isArray(payload) ? payload : (payload && payload.data ? payload.data : []);
-                data.forEach(i => {
-                    const opt = document.createElement('option');
-                    opt.value = i._id;
-                    opt.textContent = i.nombreIglesia || i.nombre || i._id;
-                    select.appendChild(opt);
-                });
-            } catch (err) {
-                console.error('Error cargando iglesias', err);
+        cargarDevoluciones();
+
+        document.getElementById('modalDevolucion').addEventListener('show.bs.modal', () => {
+            if (!editando) {
+                cargarPrestamos();
+                cargarPersonas();
+                cargarItems();
             }
-        }
-
-        async function cargarPersonas() {
-            const select = document.getElementById('responsable');
-            if (!select) return;
-            select.innerHTML = '<option value="">Seleccionar...</option>';
-            try {
-                const res = await fetch('/api/personas');
-                const payload = await res.json();
-                const data = Array.isArray(payload) ? payload : (payload && payload.data ? payload.data : []);
-                data.forEach(p => {
-                    const opt = document.createElement('option');
-                    opt.value = p._id;
-                    opt.textContent = p.nombreCompleto || (p.nombres ? (p.nombres + ' ' + (p.apellidos || '')) : p._id);
-                    select.appendChild(opt);
-                });
-            } catch (err) {
-                console.error('Error cargando personas', err);
-            }
-        }
-
-        // Copiar las opciones del select #responsable a los selects de participantes
-        function copyResponsableOptionsTo(selectElement) {
-            const resp = document.getElementById('responsable');
-            if (!resp || !selectElement) return;
-            // clone options
-            selectElement.innerHTML = resp.innerHTML;
-        }
-
-        function fillAllParticipantSelects() {
-            document.querySelectorAll('.participante-item .persona').forEach(s => copyResponsableOptionsTo(s));
-        }
-
-        // Cargar datos al iniciar
-        cargarIglesias();
-        cargarPersonas();
-        cargarPrestamos();
-
-        // Evento del botón guardar
-        document.getElementById('btnGuardar').addEventListener('click', guardarPrestamo);
-
-        // Evento para limpiar modal al cerrar
-        document.getElementById('modalDevolucion').addEventListener('hidden.bs.modal', () => {
-            document.getElementById('formularioDevolucion').reset();
-            document.getElementById('idDevolucion').value = '';
-            document.getElementById('detalleContainer').innerHTML = `
-            <div class="detalle-item mb-3 p-3 border rounded">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Item *</label>
-                        <select class="form-control" id="responsable" required>
-                            <option value="">Seleccionar </option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Cantidad *</label>
-                        <input type="text" class="form-control rol" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Estado *</label>
-                        <input type="text" class="form-control rol" required>
-                    </div>
-                    <div class="col-12 d-flex justify-content-end">
-                        <button type="button" class="btn btn-sm btn-danger" onclick="eliminarItem(this)">
-                            <i class="bi bi-trash"></i> Eliminar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-            document.getElementById('tituloModal').textContent = 'Registrar Devolución';
-            editando = false;
-
-            const iglesia = document.getElementById('prestamoAsociado');
-            const responsable = document.getElementById('responsable');
-            if (iglesia) {
-                iglesia.disabled = false;
-                if (iglesia.options.length) iglesia.options[0].text = 'Seleccionar...';
-            }
-            if (responsable) {
-                responsable.disabled = false;
-                if (responsable.options.length) responsable.options[0].text = 'Seleccionar...';
-            }
-            const infoI = document.getElementById('infoDevolucion'); if (infoI) infoI.textContent = '';
-            const infoR = document.getElementById('infoResponsable'); if (infoR) infoR.textContent = '';
-            // llenar opciones en selects de participantes
-            fillAllParticipantSelects();
         });
 
-        function agregarItem() {
-            const container = document.getElementById('detalleContainer');
-            const item = document.createElement('div');
-            item.className = 'detalle-item mb-3 p-3 border rounded';
-            item.innerHTML = `
-            <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label">Item *</label>
-                        <select class="form-control" id="responsable" required>
-                            <option value="">Seleccionar </option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Cantidad *</label>
-                        <input type="text" class="form-control rol" required>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">Estado *</label>
-                        <input type="text" class="form-control rol" required>
-                    </div>
-                    <div class="col-12 d-flex justify-content-end">
-                        <button type="button" class="btn btn-sm btn-danger" onclick="eliminarItem(this)">
-                            <i class="bi bi-trash"></i> Eliminar
-                        </button>
-                    </div>
-                </div>
-        `;
-            container.appendChild(item);
-            const selNew = item.querySelector('.item');
-            copyResponsableOptionsTo(selNew);
-        }
+        document.getElementById('modalDevolucion').addEventListener('hidden.bs.modal', () => {
+            document.getElementById('formularioDevolucion').reset();
+            document.getElementById('idDevolucion').value = "";
+            document.getElementById('tituloModal').innerText = "Nueva Devolución";
+            editando = false;
+        });
 
-        function eliminarItem(btn) {
-            const items = document.querySelectorAll('.detalle-item');
-            if (items.length > 1) {
-                btn.closest('.detalle-item').remove();
+        document.getElementById('btnGuardar').addEventListener('click', guardarDevolucion);
+
+        async function cargarDevoluciones() {
+            const res = await fetch('api/devoluciones');
+            const datos = await res.json();
+
+            const cuerpoTabla = document.getElementById('cuerpoTabla')
+            const sinDatos = document.getElementById('sinDatos');
+
+            cuerpoTabla.innerHTML = '';
+
+            if (datos.ok && datos.data.length > 0) {
+                sinDatos.style.display = 'none';
+
+                datos.data.forEach(d => {
+                    cuerpoTabla.innerHTML += `
+                        <tr>
+                            <td>${new Date(d.fechaDevolucion).toLocaleDateString('es-CR')}</td>
+                            <td>${d.idPrestamo?.nombrePrestamo || "Sin nombre"}</td>
+                            <td>${d.idPersonaDevuelve?.nombreCompleto || "Sin nombre"}</td>
+                            <td>
+                                <button class="btn btn-sm btn-info" onclick="verDetalles('${d._id}')"><i class="bi bi-eye"></i></button>
+                                <button class="btn btn-sm btn-warning" onclick="editarDevolucion('${d._id}')"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-sm btn-danger" onclick="eliminarDevolucion('${d._id}')"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                });
             } else {
-                alert('Debe tener al menos un item');
+                sinDatos.style.display = 'block';
             }
         }
 
         async function cargarPrestamos() {
-            try {
-                const respuesta = await fetch('/api/prestamos');
-                const datos = await respuesta.json();
+            const res = await fetch('/api/prestamos');
+            const datos = await res.json();
 
-                const cuerpoTabla = document.getElementById('cuerpoTabla');
-                const sinDatos = document.getElementById('sinDatos');
+            const select = document.getElementById('prestamoAsociado');
+            select.innerHTML = '<option value="">Seleccionar Préstamo</option>';
 
-                cuerpoTabla.innerHTML = '';
-
-                if (datos.ok && datos.data.length > 0) {
-                    sinDatos.style.display = 'none';
-                    datos.data.forEach(prestamo => {
-                        const fechaDevolucion = new Date(prestamo.fechaDevolucion).toLocaleDateString();
-                        const fechaFin = prestamo.fechaFin ? new Date(prestamo.fechaFin).toLocaleDateString() : '-';
-
-                        const fila = document.createElement('tr');
-                        fila.innerHTML = `
-                        <td><strong>${prestamo.nombrePrestamo}</strong></td>
-                        <td>${fechaDevolucion}</td>
-                        <td>${fechaFin}</td>
-                        <td>${prestamo.responsable || '-'}</td>
-                        <td>${prestamo.prestamoAsociado || '-'}</td>
-                        <td>
-                            <span class="badge bg-${getColorEstado(prestamo.estadoActual)}">
-                                ${prestamo.estadoActual}
-                            </span>
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-info" onclick="verDetalles('${prestamo._id}')">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                            <button class="btn btn-sm btn-warning" onclick="editarPrestamo('${prestamo._id}')">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger" onclick="eliminarPrestamo('${prestamo._id}', '${prestamo.nombrePrestamo}')">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </td>
-                    `;
-                        cuerpoTabla.appendChild(fila);
-                    });
-                } else {
-                    sinDatos.style.display = 'block';
-                }
-            } catch (error) {
-                console.error('Error al cargar préstamos:', error);
+            if (datos.ok && datos.data.length > 0) {
+                datos.data.forEach(p => {
+                    const option = document.createElement('option');
+                    option.value = p._id;
+                    option.textContent = p.nombrePrestamo;
+                    select.appendChild(option);
+                });
+            } else {
+                const option = document.createElement('option');
+                option.textContent = "No hay préstamos registrados";
+                option.disabled = true;
+                select.appendChild(option);
             }
         }
 
-        function getColorEstado(estado) {
-            const colores = {
-                'Activo': 'success',
-                'Completado': 'secondary',
-                'Cancelado': 'danger'
-            };
-            return colores[estado] || 'secondary';
+        async function cargarPersonas() {
+            const res = await fetch('/api/personas');
+            const datos = await res.json();
+
+            const select = document.getElementById('responsable');
+            select.innerHTML = '<option value="">Seleccionar Responsable</option>';
+
+            if (datos.ok && datos.data.length > 0) {
+                datos.data.forEach(p => {
+                    const option = document.createElement('option');
+                    option.value = p._id;
+                    option.textContent = p.nombreCompleto;
+                    select.appendChild(option);
+                });
+            } else {
+                const option = document.createElement('option');
+                option.textContent = "No hay personas registradas";
+                option.disabled = true;
+                select.appendChild(option);
+            }
         }
 
-        async function guardarPrestamo() {
-            const id = document.getElementById('idDevolucion').value;
-            const nombrePrestamo = document.getElementById('nombrePrestamo').value;
-            const descripcion = document.getElementById('descripcion').value;
-            const fechaDevolucion = document.getElementById('fechaDevolucion').value;
-            const fechaFin = document.getElementById('fechaFin').value;
-            const prestamoAsociado = document.getElementById('prestamoAsociado').value;
-            const responsable = document.getElementById('responsable').value;
-            const ubicacion = document.getElementById('ubicacion').value;
-            const estadoActual = document.getElementById('estadoActual').value;
-            const observaciones = document.getElementById('observaciones').value;
-
-            if (!nombrePrestamo || !fechaDevolucion || !prestamoAsociado || !responsable) {
-                alert('Por favor completa todos los campos requeridos');
-                return;
-            }
-
-            // Validar fechas
-            if (fechaFin && new Date(fechaFin) < new Date(fechaDevolucion)) {
-                alert('La fecha de fin no puede ser anterior a la fecha de inicio');
-                return;
-            }
-
-            // Recopilar participantes
-            const participantes = [];
-            const items = document.querySelectorAll('.participante-item');
-
-            items.forEach(item => {
-                const persona = item.querySelector('.persona').value;
-                const rol = item.querySelector('.rol').value;
-
-                if (persona && rol) {
-                    participantes.push({ persona, rol });
+        async function cargarItems() {
+            if (!itemsCache) {
+                const res = await fetch('/api/items');
+                const datos = await res.json();
+                if (!datos.ok) {
+                    console.error('No se obtuvieron items');
+                    return;
                 }
+                itemsCache = datos.data;
+            }
+
+            const selects = document.querySelectorAll(".item");
+            selects.forEach(sel => {
+                sel.innerHTML = '<option value="">Seleccionar Item</option>';
+                itemsCache.forEach(i => {
+                    const option = document.createElement('option');
+                    option.value = i._id;
+                    option.textContent = i.nombreItem;
+                    sel.appendChild(option);
+                });
             });
+        }
 
-            if (participantes.length === 0) {
-                alert('Debe agregar al menos un participante');
-                return;
-            }
-
-            const datos = {
-                nombrePrestamo,
-                descripcion,
-                fechaDevolucion: new Date(fechaDevolucion).toISOString(),
-                fechaFin: fechaFin ? new Date(fechaFin).toISOString() : null,
-                prestamoAsociado,
-                responsable,
-                ubicacion,
-                estadoActual,
-                participantes,
-                observaciones
-            };
-
+        async function cargarItemsEnSelect(select) {
             try {
-                const url = editando ? `/api/prestamos/${id}` : '/api/prestamos';
-                const metodo = editando ? 'PUT' : 'POST';
+                if (!itemsCache) {
+                    const res = await fetch('/api/items');
+                    const datos = await res.json();
+                    if (!datos.ok) {
+                        console.error('No se obtuvieron items');
+                        return false;
+                    }
+                    itemsCache = datos.data;
+                }
 
-                const respuesta = await fetch(url, {
-                    method: metodo,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(datos)
+                select.innerHTML = '<option value="">Seleccionar Item</option>';
+                itemsCache.forEach(i => {
+                    const option = document.createElement("option");
+                    option.value = i._id;
+                    option.textContent = i.nombreItem;
+                    select.appendChild(option);
                 });
 
-                const resultado = await respuesta.json();
-
-                if (resultado.ok) {
-                    alert(editando ? 'Préstamo actualizado correctamente' : 'Préstamo creado correctamente');
-                    modalDevolucion.hide();
-                    cargarPrestamos();
-                } else {
-                    alert('Error: ' + resultado.msg);
-                }
+                return true;
             } catch (error) {
-                console.error('Error al guardar:', error);
-                alert('Error al guardar el préstamo');
+                console.error('Error cargando items en select:', error);
+                return false;
             }
+        }
+
+        async function agregarItem() {
+            const lista = document.getElementById("listaItems");
+            const fila = document.createElement("div");
+            fila.classList.add("detalle-devolucion-item", "d-flex", "gap-3", "mb-3");
+            fila.innerHTML = `
+            <div class="flex-fill">
+                <label class="form-label">Item *</label>
+                <select class="form-control item" required>
+                    <option value="">Seleccionar Item</option>
+                </select>
+            </div>
+            
+            <div class="flex-fill">
+                <label class="form-label">Cantidad *</label>
+                <input type="number" min="1" class="form-control cantidad" required>
+            </div>
+            
+            <div class="flex-fill">
+                <label class="form-label">Estado *</label>
+                <select class="form-control estado" required>
+                    <option value="">Seleccionar Estado</option>
+                    <option value="Bueno">Bueno</option>
+                    <option value="Dañado">Dañado</option>
+                    <option value="Reparación requerida">Reparación requerida</option>
+                    <option value="Otro">Otro</option>
+                </select>
+            </div>
+            
+            <div class="d-flex align-items-end">
+                <button type="button" class="btn btn-md btn-danger" onclick="eliminarItem(this)">
+                    <i class="bi bi-trash"></i> Eliminar
+                </button>
+            </div>
+            `;
+
+            lista.appendChild(fila);
+            const nuevoSelect = fila.querySelector('.item');
+            await cargarItemsEnSelect(nuevoSelect);
+
+            return fila;
+        }
+
+        function eliminarItem(btn) {
+            btn.closest(".detalle-devolucion-item").remove();
         }
 
         async function verDetalles(id) {
-            try {
-                const respuesta = await fetch(`/api/prestamos/${id}`);
-                const datos = await respuesta.json();
+            const res = await fetch(`/api/devoluciones/${id}`);
+            const datos = await res.json();
+            const d = datos.data;
 
-                if (datos.ok) {
-                    const prestamo = datos.data;
-                    let html = `
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>Nombre:</strong> ${prestamo.nombrePrestamo}</p>
-                            <p><strong>Responsable:</strong> ${prestamo.responsable || '-'}</p>
-                            <p><strong>Iglesia:</strong> ${prestamo.prestamoAsociado || '-'}</p>
-                        </div>
-                        <div class="col-md-6">
-                            <p><strong>Fecha Inicio:</strong> ${new Date(prestamo.fechaDevolucion).toLocaleDateString()}</p>
-                            <p><strong>Fecha Fin:</strong> ${prestamo.fechaFin ? new Date(prestamo.fechaFin).toLocaleDateString() : '-'}</p>
-                            <p><strong>Estado:</strong> <span class="badge bg-${getColorEstado(prestamo.estadoActual)}">${prestamo.estadoActual}</span></p>
-                        </div>
-                    </div>
-                    ${prestamo.descripcion ? `<p><strong>Descripción:</strong> ${prestamo.descripcion}</p>` : ''}
-                    ${prestamo.ubicacion ? `<p><strong>Ubicación:</strong> ${prestamo.ubicacion}</p>` : ''}
-                    <h6 class="mt-3">Participantes:</h6>
-                    <table class="table table-sm">
-                        <thead>
-                            <tr>
-                                <th>Persona</th>
-                                <th>Rol</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                `;
+            const listaItems = d.detalles.map(i => `
+            <li>
+                ${i.idItem?.nombreItem || 'Sin nombre'} — 
+                <strong>${i.cantidad}</strong> — 
+                <strong>${i.estadoDevolucion}</strong>
+            </li>
+            `).join('');
 
-                    if (prestamo.participantes && prestamo.participantes.length > 0) {
-                        prestamo.participantes.forEach(p => {
-                            html += `
-                            <tr>
-                                <td>${p.persona}</td>
-                                <td>${p.rol}</td>
-                            </tr>
-                        `;
-                        });
-                    }
+            document.getElementById('detallesContent').innerHTML = `
+            <p><strong>Fecha de Devolución:</strong> ${new Date(d.fechaDevolucion).toISOString().split("T")[0]}</p>
+            <p><strong>Préstamo Asociado:</strong> ${d.idPrestamo?.nombrePrestamo || 'Sin nombre'}</p>
+            <p><strong>Responsable de Devolución:</strong> ${d.idPersonaDevuelve?.nombreCompleto || 'Sin nombre'}</p>
 
-                    html += `
-                        </tbody>
-                    </table>
-                    ${prestamo.observaciones ? `<p><strong>Observaciones:</strong> ${prestamo.observaciones}</p>` : ''}
-                `;
+            <p><strong>Total de Ítems Devueltos:</strong> ${d.detalles.length}</p>
 
-                    document.getElementById('detallesContent').innerHTML = html;
-                    modalDetalles.show();
-                }
-            } catch (error) {
-                console.error('Error al obtener detalles:', error);
+            <h6>Detalle de Items</h6>
+            <ul>${listaItems}</ul>
+            `;
+
+            modalDetalles.show();
+        }
+
+        async function guardarDevolucion() {
+            const id = document.getElementById('idDevolucion').value;
+            const fechaDevolucion = document.getElementById('fechaDevolucion').value + "T12:00:00";
+            const idPrestamo = document.getElementById('prestamoAsociado').value;
+            const idPersonaDevuelve = document.getElementById('responsable').value;
+            const observacionesGenerales = document.getElementById('observaciones').value;
+
+            let detalles = [];
+            document.querySelectorAll('#listaItems .detalle-devolucion-item').forEach(div => {
+                detalles.push({
+                    idItem: div.querySelector('.item').value,
+                    cantidad: parseInt(div.querySelector('.cantidad').value),
+                    estadoDevolucion: div.querySelector('.estado').value
+                });
+            });
+
+            const datos = { fechaDevolucion, idPrestamo, idPersonaDevuelve, detalles, observacionesGenerales };
+
+            const url = editando ? `/api/devoluciones/${id}` : '/api/devoluciones';
+            const metodo = editando ? 'PUT' : 'POST';
+
+            const res = await fetch(url, {
+                method: metodo,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            });
+
+            const data = await res.json();
+            if (data.ok) {
+                cargarDevoluciones();
+                modalDevolucion.hide();
+                alert(editando ? 'Devolución actualizada correctamente' : 'Devolución creada correctamente');
+            } else {
+                alert('Error: ' + data.msg);
             }
         }
 
-        async function editarPrestamo(id) {
-            try {
-                const respuesta = await fetch(`/api/prestamos/${id}`);
-                const datos = await respuesta.json();
+        async function editarDevolucion(id) {
+            const res = await fetch(`/api/devoluciones/${id}`);
+            const datos = await res.json();
 
-                if (datos.ok) {
-                    const prestamo = datos.data;
-                    // ensure selects populated first
-                    await cargarIglesias();
-                    await cargarPersonas();
-
-                    document.getElementById('idDevolucion').value = prestamo._id;
-                    document.getElementById('nombrePrestamo').value = prestamo.nombrePrestamo;
-                    document.getElementById('descripcion').value = prestamo.descripcion || '';
-                    document.getElementById('fechaDevolucion').value = new Date(prestamo.fechaDevolucion).toISOString().slice(0, 16);
-                    document.getElementById('fechaFin').value = prestamo.fechaFin ? new Date(prestamo.fechaFin).toISOString().slice(0, 16) : '';
-
-                    // Iglesia asociada: try to set by id, otherwise show name in first option and disable
-                    const selIglesia = document.getElementById('prestamoAsociado');
-                    let iglesiaId = '';
-                    let iglesiaName = '';
-                    if (prestamo.prestamoAsociado && typeof prestamo.prestamoAsociado === 'object') {
-                        iglesiaId = prestamo.prestamoAsociado._id || '';
-                        iglesiaName = prestamo.prestamoAsociado.nombreIglesia || prestamo.prestamoAsociado.nombre || '';
-                    } else {
-                        iglesiaId = prestamo.prestamoAsociado || '';
-                        iglesiaName = prestamo.prestamoAsociado || '';
-                    }
-                    if (selIglesia) {
-                        const exists = Array.from(selIglesia.options).some(o => o.value === iglesiaId);
-                        if (exists) {
-                            selIglesia.value = iglesiaId;
-                        } else {
-                            selIglesia.options[0].text = iglesiaName || 'Seleccionado';
-                            selIglesia.options[0].value = iglesiaId || '';
-                            selIglesia.value = iglesiaId || '';
-                        }
-                        selIglesia.disabled = true;
-                        const infoI = document.getElementById('infoDevolucion'); if (infoI) infoI.textContent = iglesiaName;
-                    }
-
-                    // Responsable: similar handling
-                    const selResp = document.getElementById('responsable');
-                    let respId = '';
-                    let respName = '';
-                    if (prestamo.responsable && typeof prestamo.responsable === 'object') {
-                        respId = prestamo.responsable._id || '';
-                        respName = prestamo.responsable.nombreCompleto || (prestamo.responsable.nombres ? (prestamo.responsable.nombres + ' ' + (prestamo.responsable.apellidos || '')) : '');
-                    } else {
-                        respId = prestamo.responsable || '';
-                        respName = prestamo.responsable || '';
-                    }
-                    if (selResp) {
-                        const existsR = Array.from(selResp.options).some(o => o.value === respId);
-                        if (existsR) {
-                            selResp.value = respId;
-                        } else {
-                            selResp.options[0].text = respName || 'Seleccionado';
-                            selResp.options[0].value = respId || '';
-                            selResp.value = respId || '';
-                        }
-                        selResp.disabled = true;
-                        const infoR = document.getElementById('infoResponsable'); if (infoR) infoR.textContent = respName;
-                    }
-
-                    document.getElementById('ubicacion').value = prestamo.ubicacion || '';
-                    document.getElementById('estadoActual').value = prestamo.estadoActual || 'Activo';
-                    document.getElementById('observaciones').value = prestamo.observaciones || '';
-
-                    // Cargar participantes
-                    const container = document.getElementById('detalleContainer');
-                    container.innerHTML = '';
-
-                    if (prestamo.participantes && prestamo.participantes.length > 0) {
-                        prestamo.participantes.forEach(p => {
-                            const participanteDiv = document.createElement('div');
-                            participanteDiv.className = 'detalle-item mb-3 p-3 border rounded';
-                            participanteDiv.innerHTML = `
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <label class="form-label">Persona *</label>
-                                    <select class="form-control persona" required>
-                                        <option value="">Seleccionar...</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Rol *</label>
-                                    <input type="text" class="form-control rol" value="${p.rol}" required>
-                                </div>
-                            </div>
-                            <button type="button" class="btn btn-sm btn-danger" onclick="eliminarItem(this)">
-                                <i class="bi bi-trash"></i> Eliminar
-                            </button>
-                        `;
-                            container.appendChild(participanteDiv);
-                            // populate select options and set selected value
-                            const sel = participanteDiv.querySelector('.persona');
-                            copyResponsableOptionsTo(sel);
-                            const personaId = (p.persona && typeof p.persona === 'object') ? (p.persona._id || '') : (p.persona || '');
-                            if (personaId) sel.value = personaId;
-                        });
-                    }
-
-                    document.getElementById('tituloModal').textContent = 'Editar Préstamo';
-                    editando = true;
-                    modalDevolucion.show();
-                }
-            } catch (error) {
-                console.error('Error al obtener préstamo:', error);
-            }
-        }
-
-        async function eliminarPrestamo(id, nombre) {
-            if (!confirm(`¿Estás seguro de que deseas eliminar el préstamo "${nombre}"?`)) {
+            if (!datos.ok) {
+                alert("Error cargando devoluciones");
                 return;
             }
 
+            const d = datos.data;
+            editando = true;
+
+            await cargarPrestamos();
+            await cargarPersonas();
+            await cargarItems();
+
+            document.getElementById('idDevolucion').value = d._id;
+            document.getElementById('fechaDevolucion').value = d.fechaDevolucion.split('T')[0];
+            document.getElementById('prestamoAsociado').value = d.idPrestamo._id;
+            document.getElementById('responsable').value = d.idPersonaDevuelve._id;
+            document.getElementById('observaciones').value = d.observacionesGenerales;
+
+            const lista = document.getElementById('listaItems');
+            lista.innerHTML = "";
+
+            for (const it of d.detalles) {
+                const fila = await agregarItem();
+                const select = fila.querySelector('.item');
+
+                if (select.options.length <= 1) {
+                    await cargarItemsEnSelect(select);
+                }
+
+                select.value = it.idItem?._id || "";
+                fila.querySelector('.cantidad').value = it.cantidad;
+                fila.querySelector('.estado').value = it.estadoDevolucion;
+            }
+
+            document.getElementById('tituloModal').innerText = "Editar Devolución";
+            modalDevolucion.show();
+
+        }
+    
+        async function eliminarDevolucion(id) {
+            if (!confirm(`¿Estás seguro de que deseas eliminar la devolución seleccionada?`)) return;
+
             try {
-                const respuesta = await fetch(`/api/prestamos/${id}`, { method: 'DELETE' });
-                const datos = await respuesta.json();
+                const res = await fetch(`/api/devoluciones/${id}`, { method: 'DELETE' });
+                const datos = await res.json();
 
                 if (datos.ok) {
-                    alert('Préstamo eliminado correctamente');
-                    cargarPrestamos();
+                    alert('Devolución eliminada correctamente');
+                    cargarDevoluciones();
                 } else {
                     alert('Error: ' + datos.msg);
                 }

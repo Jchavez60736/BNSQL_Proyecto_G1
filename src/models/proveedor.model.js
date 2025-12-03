@@ -17,24 +17,14 @@ const proveedorSchema = new mongoose.Schema(
         telefono: {
             type: String,
             trim: true,
-            validate: {
-                validator: function (v) {
-                    return !v || /^[0-9+\-\s]{8,20}$/.test(v);
-                },
-                message: 'El teléfono no tiene un formato válido'
-            }
+            match: [/^[0-9]{8}$/, 'El teléfono debe contener exactamente 8 dígitos']
         },
 
         correoElectronico: {
             type: String,
             trim: true,
             lowercase: true,
-            validate: {
-                validator: function (v) {
-                    return !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-                },
-                message: 'El correo electrónico no es válido'
-            }
+            match: [/^\S+@\S+\.\S+$/, 'El correo electrónico tiene un formato inválido']
         },
 
         direccion: {
