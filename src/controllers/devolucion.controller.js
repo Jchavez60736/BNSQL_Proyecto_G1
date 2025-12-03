@@ -1,9 +1,38 @@
 // controllers/devolucion.controller.js
 const Devolucion = require('../models/devolucion.model');
+const Inventario = require('../models/inventario.model');
 
 const crearDevolucion = async (req, res) => {
     try {
         const datos = req.body;
+        const detalles = datos.detalles || [];
+
+        if (!detalles.length) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'Debe agregar al menos un item a la devolución.'
+            });
+        }
+
+        for (const i of detalles) {
+            const cantidadDevuelta = parseInt(i.cantidad);
+
+            if (!cantidadDevuelta || cantidadDevuelta <= 0) {
+                return res.status(400).json({
+                    ok: false,
+                    msg: `La cantidades deben ser válidas.`
+                });
+            }
+
+            const itemInventario = await Inventario.findOne({ item: i.idItem });
+
+            if (itemInventario) {
+                itemInventario.cantidad += cantidadDevuelta;
+                await itemInventario.save();
+            } else {
+                await Inventario.create({ item: i.idItem, cantidad: cantidadDevuelta });
+            }
+        };
 
         const devolucion = new Devolucion(datos);
         const devolucionGuardada = await devolucion.save();

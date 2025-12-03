@@ -82,9 +82,7 @@
                             <h6 class="mb-3">Detalle de Préstamo</h6>
 
                             <div id="detalleContainer" class="p-3 border rounded">
-
                                 <div id="listaItems">
-
                                     <div class="detalle-prestamo-item d-flex gap-3 mb-3">
                                         <div class="flex-fill">
                                             <label class="form-label">Item *</label>
@@ -106,7 +104,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <button type="button" class="btn btn-sm btn-secondary mt-3" onclick="agregarItem()">
+                                <button type="button" class="btn btn-sm btn-secondary mt-3" id="btnAgregarItem" onclick="agregarItem()">
                                     <i class="bi bi-plus"></i> Agregar Item
                                 </button>
                             </div>
@@ -363,6 +361,23 @@
             btn.closest(".detalle-prestamo-item").remove();
         }
 
+        function deshabilitarDetalle() {
+            const filas = document.querySelectorAll('#listaItems .detalle-prestamo-item');
+
+            filas.forEach(fila => {
+                const selectItem = fila.querySelector('.item');
+                const inputCantidad = fila.querySelector('.cantidad');
+                const btnEliminar = fila.querySelector('button');
+
+                if (selectItem) selectItem.disabled = true;
+                if (inputCantidad) inputCantidad.disabled = true;
+                if (btnEliminar) btnEliminar.disabled = true;
+            });
+
+            const btnAgregarItem = document.getElementById('btnAgregarItem');
+            if (btnAgregarItem) btnAgregarItem.disabled = true;
+        }
+
         async function verDetalles(id) {
             try {
                 const res = await fetch(`/api/prestamos/${id}`);
@@ -473,6 +488,8 @@
                     select.value = it.item?._id || "";
                     fila.querySelector('.cantidad').value = it.cantidad;
                 }
+                
+                deshabilitarDetalle();
 
                 document.getElementById('tituloModal').innerText = "Editar Préstamo";
                 modalPrestamo.show();

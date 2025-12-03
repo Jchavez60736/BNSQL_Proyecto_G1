@@ -1,9 +1,46 @@
 // controllers/prestamo.controller.js
 const Prestamo = require('../models/prestamo.model');
+const Inventario = require('../models/inventario.model');
 
 const crearPrestamo = async (req, res) => {
     try {
         const datos = req.body;
+        const items = datos.items || [];
+
+        if (!items.length) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'Debe agregar al menos un item al préstamo.'
+            });
+        }
+
+        for (const i of items) {
+            const cantidadSolicitada = parseInt(i.cantidad);
+            const itemInventario = await Inventario.findOne({ item: i.item }).populate('item'); 
+
+            if (!itemInventario) {
+                return res.status(400).json({
+                    ok: false,
+                    msg: `Cada item tiene que estar registrado en el inventario.`
+                });
+            }
+            if (itemInventario.cantidad < cantidadSolicitada) {
+                return res.status(400).json({
+                    ok: false,
+                    msg: `Stock insuficiente para el item "${itemInventario.item.nombreItem}"\nDisponible: ${itemInventario.cantidad}\nSolicitado: ${cantidadSolicitada}`
+                });
+            }
+
+        };
+
+        for (const i of items) {
+            const cantidadSolicitada = parseInt(i.cantidad);
+
+            const itemInventario = await Inventario.findOne({ item: i.item });
+
+            itemInventario.cantidad -= cantidadSolicitada;
+            await itemInventario.save();
+        }
 
         const prestamo = new Prestamo(datos);
         const prestamoGuardado = await prestamo.save();
@@ -13,6 +50,7 @@ const crearPrestamo = async (req, res) => {
             msg: 'Préstamo creado correctamente',
             data: prestamoGuardado
         });
+        
     } catch (error) {
         console.error('Error al crear préstamo:', error);
         return res.status(500).json({
