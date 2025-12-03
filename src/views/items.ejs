@@ -22,7 +22,6 @@
                 <i class="bi bi-plus-circle"></i> Nuevo Item
             </button>
         </div>
-
     </div>
 
     <div class="card shadow-sm">
@@ -41,7 +40,6 @@
                     <tbody id="cuerpoTabla"></tbody>
                 </table>
             </div>
-
             <div id="sinDatos" class="alert alert-info text-center mt-3" style="display:none;">
                 No hay items registrados aún.
             </div>
@@ -51,7 +49,6 @@
     <div class="modal fade" id="modalItem" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
-
                 <div class="modal-header">
                     <h5 class="modal-title" id="tituloModal">Nuevo Item</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -59,21 +56,21 @@
 
                 <div class="modal-body">
                     <form id="formItem">
-
                         <input type="hidden" id="idItem">
-
                         <div class="mb-3">
-                            <label class="form-label">Nombre del Item *</label>
+                            <label for="nombreItem" class="form-label">Nombre del Item *</label>
                             <input type="text" class="form-control" id="nombreItem" required>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Categoría *</label>
-                            <select class="form-control" id="categoria" required></select>
+                            <label for="categoria" class="form-label">Categoría *</label>
+                            <select class="form-control" id="categoria" required>
+                                <option value="">Seleccionar Categoría</option>
+                            </select>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Descripción *</label>
+                            <label for="descripcion" class="form-label">Descripción *</label>
                             <input type="text" class="form-control" id="descripcion" required>
                         </div>
 
@@ -89,8 +86,8 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button class="btn btn-teal" id="btnGuardar">Guardar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-teal" id="btnGuardar">Guardar</button>
                 </div>
             </div>
         </div>
@@ -103,65 +100,54 @@
         cargarCategoriasFiltro();
         cargarItems();
 
-        document.getElementById('btnGuardar').addEventListener('click', guardarItem);
-        document.getElementById('modalItem').addEventListener('show.bs.modal', cargarCategorias);
+        document.getElementById('modalItem').addEventListener('show.bs.modal', () => {
+            if (!editando) {
+                cargarCategorias();
+            }
+        });
         document.getElementById('modalItem').addEventListener('hidden.bs.modal', () => {
             document.getElementById('formItem').reset();
             document.getElementById('idItem').value = '';
             document.getElementById('tituloModal').textContent = 'Nuevo Item';
             editando = false;
         });
+        document.getElementById('btnGuardar').addEventListener('click', guardarItem);
 
         async function cargarItems() {
-            try {
-                const categoria = document.getElementById('filtroCategoria').value;
-                let url = '/api/items';
+            const categoria = document.getElementById('filtroCategoria').value;
+            let url = '/api/items';
 
-                if (categoria) {
-                    url += `?categoria=${encodeURIComponent(categoria)}`;
-                }
+            if (categoria) {
+                url += `?categoria=${encodeURIComponent(categoria)}`;
+            }
 
-                const respuesta = await fetch(url);
-                const datos = await respuesta.json();
+            const res = await fetch(url);
+            const datos = await res.json();
 
-                const cuerpoTabla = document.getElementById('cuerpoTabla');
-                const sinDatos = document.getElementById('sinDatos');
+            const cuerpoTabla = document.getElementById('cuerpoTabla');
+            const sinDatos = document.getElementById('sinDatos');
 
-                cuerpoTabla.innerHTML = '';
+            cuerpoTabla.innerHTML = '';
 
-                if (datos.ok && datos.data.length > 0) {
-                    sinDatos.style.display = 'none';
+            if (datos.ok && datos.data.length > 0) {
+                sinDatos.style.display = 'none';
 
-                    datos.data.forEach(item => {
-                        const fila = document.createElement('tr');
-                        fila.innerHTML = `
+                datos.data.forEach(item => {
+                    cuerpoTabla.innerHTML += `
+                        <tr>
                             <td><strong>${item.nombreItem}</strong></td>
-                            <td>${item.categoria?.nombre || 'Sin categoría'}</td>
+                            <td>${item.categoria.nombre}</td>
                             <td>${item.descripcion}</td>
+                            <td>${item.estado}</td>
                             <td>
-                                <span class="badge ${item.estado === 'Activo'
-                                ? 'bg-success'
-                                : item.estado === 'En Mantenimiento'
-                                    ? 'bg-warning'
-                                    : 'bg-danger'
-                            }">${item.estado}</span>
+                                <button class="btn btn-sm btn-warning" onclick="editarItem('${item._id}')"><i class="bi bi-pencil"></i></button>
+                                <button class="btn btn-sm btn-danger" onclick="eliminarItem('${item._id}', '${item.nombreItem}')"><i class="bi bi-trash"></i></button>
                             </td>
-                            <td>
-                                <button class="btn btn-sm btn-warning" onclick="editarItem('${item._id}')">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button class="btn btn-sm btn-danger" onclick="eliminarItem('${item._id}', '${item.nombreItem}')">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </td>
-                        `;
-                        cuerpoTabla.appendChild(fila);
-                    });
-                } else {
-                    sinDatos.style.display = 'block';
-                }
-            } catch (error) {
-                console.error('Error al cargar items:', error);
+                        </tr>
+                    `;
+                });
+            } else {
+                sinDatos.style.display = 'block';
             }
         }
 
@@ -179,58 +165,49 @@
 
             const datos = { nombreItem, categoria, descripcion, estado };
 
-            try {
-                const url = editando ? `/api/items/${id}` : '/api/items';
-                const metodo = editando ? 'PUT' : 'POST';
+            const url = editando ? `/api/items/${id}` : '/api/items';
+            const metodo = editando ? 'PUT' : 'POST';
 
-                const respuesta = await fetch(url, {
-                    method: metodo,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(datos)
-                });
+            const res = await fetch(url, {
+                method: metodo,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            });
 
-                const resultado = await respuesta.json();
+            const data = await res.json();
 
-                if (resultado.ok) {
-                    alert(editando ? 'Item actualizado correctamente' : 'Item creado correctamente');
-                    modalItem.hide();
-                    cargarItems();
-                } else {
-                    alert('Error: ' + resultado.msg);
-                }
-            } catch (error) {
-                console.error('Error al guardar:', error);
-                alert('Error al guardar el Item');
+            if (data.ok) {
+                alert(editando ? 'Item actualizado correctamente' : 'Item creado correctamente');
+                modalItem.hide();
+                cargarItems();
+            } else {
+                alert('Error: ' + data.msg);
             }
         }
 
         async function editarItem(id) {
-            try {
-                const respuesta = await fetch(`/api/items/${id}`);
-                const datos = await respuesta.json();
+            const res = await fetch(`/api/items/${id}`);
+            const datos = await res.json();
 
-                if (!datos.ok) {
-                    alert('No se pudo cargar el item');
-                    return;
-                }
-
-                const item = datos.data;
-
-                await cargarCategorias();
-
-                document.getElementById('idItem').value = item._id;
-                document.getElementById('nombreItem').value = item.nombreItem;
-                document.getElementById('descripcion').value = item.descripcion;
-                document.getElementById('categoria').value = item.categoria?._id;
-                document.getElementById('estado').value = item.estado;
-
-                editando = true;
-                document.getElementById('tituloModal').textContent = 'Editar Item';
-                modalItem.show();
-
-            } catch (error) {
-                console.error('Error al obtener item:', error);
+            if (!datos.ok) {
+                alert('No se pudo cargar el item');
+                return;
             }
+
+            const item = datos.data;
+            editando = true;
+
+            await cargarCategorias();
+
+            document.getElementById('idItem').value = item._id;
+            document.getElementById('nombreItem').value = item.nombreItem;
+            document.getElementById('descripcion').value = item.descripcion;
+            document.getElementById('categoria').value = item.categoria._id;
+            document.getElementById('estado').value = item.estado;
+
+
+            document.getElementById('tituloModal').textContent = 'Editar Item';
+            modalItem.show();
         }
 
         async function eliminarItem(id, nombre) {
@@ -238,70 +215,54 @@
                 return;
             }
 
-            try {
-                const respuesta = await fetch(`/api/items/${id}`, { method: 'DELETE' });
-                const datos = await respuesta.json();
+            const respuesta = await fetch(`/api/items/${id}`, { method: 'DELETE' });
+            const datos = await respuesta.json();
 
-                if (datos.ok) {
-                    alert('Item eliminado correctamente');
-                    cargarItems();
-                } else {
-                    alert('Error: ' + datos.msg);
-                }
-            } catch (error) {
-                console.error('Error al eliminar:', error);
+            if (datos.ok) {
+                alert('Item eliminado correctamente');
+                cargarItems();
+            } else {
+                alert('Error: ' + datos.msg);
             }
         }
 
         async function cargarCategorias() {
-            try {
-                const resp = await fetch('/api/categorias');
-                const datos = await resp.json();
+            const res = await fetch('/api/categorias');
+            const datos = await res.json();
 
-                const select = document.getElementById('categoria');
-                select.innerHTML = ''; 
+            const select = document.getElementById('categoria');
+            select.innerHTML = '<option value="">Seleccionar Categoría</option>';
 
-                if (datos.ok && datos.data.length > 0) {
-                    datos.data.forEach(cat => {
-                        const option = document.createElement('option');
-                        option.value = cat._id;
-                        option.textContent = cat.nombre;
-                        select.appendChild(option);
-                    });
-                } else {
+            if (datos.ok && datos.data.length > 0) {
+                datos.data.forEach(cat => {
                     const option = document.createElement('option');
-                    option.textContent = "No hay categorías registradas";
-                    option.disabled = true;
+                    option.value = cat._id;
+                    option.textContent = cat.nombre;
                     select.appendChild(option);
-                }
-
-            } catch (error) {
-                console.error("Error cargando categorías:", error);
+                });
+            } else {
+                const option = document.createElement('option');
+                option.textContent = "No hay categorías registradas";
+                option.disabled = true;
+                select.appendChild(option);
             }
         }
 
         async function cargarCategoriasFiltro() {
-            try {
-                const resp = await fetch('/api/categorias');
-                const datos = await resp.json();
+            const resp = await fetch('/api/categorias');
+            const datos = await resp.json();
 
-                const filtro = document.getElementById('filtroCategoria');
-                filtro.innerHTML = '<option value="">Todas las categorías</option>';
+            const filtro = document.getElementById('filtroCategoria');
+            filtro.innerHTML = '<option value="">Todas las categorías</option>';
 
-                if (datos.ok && datos.data.length > 0) {
-                    datos.data.forEach(cat => {
-                        const option = document.createElement('option');
-                        option.value = cat._id;
-                        option.textContent = cat.nombre;
-                        filtro.appendChild(option);
-                    });
-                }
-
-            } catch (error) {
-                console.error("Error cargando categorías:", error);
+            if (datos.ok && datos.data.length > 0) {
+                datos.data.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat._id;
+                    option.textContent = cat.nombre;
+                    filtro.appendChild(option);
+                });
             }
         }
-
-
     </script>
 </body>

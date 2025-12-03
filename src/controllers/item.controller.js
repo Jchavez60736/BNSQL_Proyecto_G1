@@ -32,8 +32,7 @@ const obtenerItems = async (req, res) => {
             filtro.categoria = categoria;
         }
 
-        const items = await Item.find(filtro)
-            .populate('categoria');
+        const items = await Item.find(filtro).populate('categoria');
 
         return res.json({
             ok: true,
@@ -52,7 +51,7 @@ const obtenerItemPorId = async (req, res) => {
     try {
         const { id } = req.params;
 
-        const item = await Item.findById(id);
+        const item = await Item.findById(id).populate('categoria');
 
         if (!item) {
             return res.status(404).json({

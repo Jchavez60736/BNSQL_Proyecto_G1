@@ -33,7 +33,7 @@
                     <tbody id="cuerpoTabla"></tbody>
                 </table>
             </div>
-            <div id="sinDatos" class="alert alert-info text-center mt-3">
+            <div id="sinDatos" class="alert alert-info text-center mt-3" style="display:none;">
                 No hay mantenimientos registrados aún.
             </div>
         </div>
@@ -271,7 +271,7 @@
 
             modalDetalles.show();
         }
-        
+
         async function guardarMantenimiento() {
             const id = document.getElementById('idMantenimiento').value;
             const idItem = document.getElementById('idItem').value;
@@ -318,7 +318,7 @@
             editando = true;
 
             await cargarItems();
-            await cargarPersonas();            
+            await cargarPersonas();
 
             document.getElementById('idMantenimiento').value = m._id;
             document.getElementById('idItem').value = m.idItem._id;
@@ -340,18 +340,14 @@
                 return;
             }
 
-            try {
-                const res = await fetch(`/api/mantenimientos/${id}`, { method: 'DELETE' });
-                const datos = await res.json();
+            const res = await fetch(`/api/mantenimientos/${id}`, { method: 'DELETE' });
+            const datos = await res.json();
 
-                if (datos.ok) {
-                    alert('Mantenimiento eliminado correctamente');
-                    cargarMantenimientos();
-                } else {
-                    alert('Error: ' + datos.msg);
-                }
-            } catch (error) {
-                console.error('Error al eliminar:', error);
+            if (datos.ok) {
+                alert('Mantenimiento eliminado correctamente');
+                cargarMantenimientos();
+            } else {
+                alert('Error: ' + datos.msg);
             }
         }
     </script>
