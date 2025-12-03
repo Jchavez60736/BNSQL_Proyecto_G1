@@ -7,39 +7,36 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const { ensureAuth } = require('./middlewares/authMiddleware');
 
+const usuarioRoutes = require('./routes/usuario.routes');
 const iglesiasRoutes = require('./routes/iglesias.routes');
 const personaRoutes = require('./routes/persona.routes'); 
-const mantenimientoRoutes = require('./routes/mantenimiento.routes');
-const usuarioRoutes = require('./routes/usuario.routes');
+const proveedoresRoutes = require('./routes/proveedores.routes');
+const categoriaRoutes = require('./routes/categoria.routes');
 const itemRoutes = require('./routes/item.routes');
+const entradaRoutes = require('./routes/entrada.routes');
+const salidaRoutes = require('./routes/salida.routes');
 const eventoRoutes = require('./routes/evento.routes');
 const prestamoRoutes = require('./routes/prestamo.routes');
 const devolucionRoutes = require('./routes/devolucion.routes');
-const categoriaRoutes = require('./routes/categoria.routes');
-const proveedoresRoutes = require('./routes/proveedores.routes');
+const mantenimientoRoutes = require('./routes/mantenimiento.routes');
 
 const expressLayouts = require('express-ejs-layouts');
 
 const app = express();
 
-// Conectar a MongoDB
 connectDB();
 
-// Archivos estáticos (CSS, JS, imágenes) - PRIMERO, antes que todo
 console.log('Sirviendo archivos estáticos desde:', path.join(__dirname, '..', 'public'));
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
-// Middlewares nativos de Express
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Vistas + layouts
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));   // src/views
+app.set('views', path.join(__dirname, 'views'));   
 app.use(expressLayouts);
 app.set('layout', 'layout');
 
-// Sesiones
 app.use(
     session({
         secret: 'supersecretkey',
@@ -49,22 +46,21 @@ app.use(
     })
 );
 
-// Rutas de autenticación
 app.use(authRoutes);
 
-// APIs protegidas
+app.use('/api/usuarios', ensureAuth, usuarioRoutes);
 app.use('/api/iglesias', ensureAuth, iglesiasRoutes); 
 app.use('/api/personas', ensureAuth, personaRoutes);
-app.use('/api/usuarios', ensureAuth, usuarioRoutes);
 app.use('/api/proveedores', ensureAuth, proveedoresRoutes);
 app.use('/api/categorias', ensureAuth, categoriaRoutes); 
 app.use('/api/items', ensureAuth, itemRoutes);
+app.use('/api/entradas', ensureAuth, entradaRoutes);
+app.use('/api/salidas', ensureAuth, salidaRoutes);
 app.use('/api/eventos', ensureAuth, eventoRoutes);
 app.use('/api/prestamos', ensureAuth, prestamoRoutes);
 app.use('/api/devoluciones', ensureAuth, devolucionRoutes);
 app.use('/api/mantenimientos', ensureAuth, mantenimientoRoutes);
 
-// Home protegido
 app.get('/home', ensureAuth, (req, res) => {
     res.render('home', {
         layout: 'layout',
@@ -74,17 +70,14 @@ app.get('/home', ensureAuth, (req, res) => {
     });
 });
 
-// Raíz → login
 app.get('/', (req, res) => {
     res.redirect('/login');
 });
 
-// Ruta de prueba para verificar archivos estáticos
 app.get('/test-css', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'public', 'css', 'styles.css'));
 });
 
-// Vista de usuarios (ejemplo)
 app.get('/usuarios', ensureAuth, (req, res) =>{
     res.render('usuarios', {
         layout: 'layout',
@@ -94,7 +87,6 @@ app.get('/usuarios', ensureAuth, (req, res) =>{
     });
 });
 
-// Vista de iglesias
 app.get('/iglesias', ensureAuth, (req, res) =>{
     res.render('iglesias', {
         layout: 'layout',
@@ -104,7 +96,6 @@ app.get('/iglesias', ensureAuth, (req, res) =>{
     });
 });
 
-// Vista de personas
 app.get('/personas', ensureAuth, (req, res) =>{
     res.render('personas', {
         layout: 'layout',
@@ -114,7 +105,6 @@ app.get('/personas', ensureAuth, (req, res) =>{
     });
 });
 
-// Vista de proveedores
 app.get('/proveedores', ensureAuth, (req, res) => {
     res.render('proveedores', {
         layout: 'layout',
@@ -124,17 +114,6 @@ app.get('/proveedores', ensureAuth, (req, res) => {
     });
 });
 
-// Vista de items
-app.get('/items', ensureAuth, (req, res) => {
-    res.render('items', {
-        layout: 'layout',
-        titulo: "Gestión de Items",
-        nombreCompleto: req.session.nombreCompleto,
-        rol: req.session.rol
-    });
-});
-
-// Vista de categorias
 app.get('/categorias', ensureAuth, (req, res) => {
     res.render('categorias', {
         layout: 'layout',
@@ -144,8 +123,33 @@ app.get('/categorias', ensureAuth, (req, res) => {
     });
 });
 
+app.get('/items', ensureAuth, (req, res) => {
+    res.render('items', {
+        layout: 'layout',
+        titulo: "Gestión de Items",
+        nombreCompleto: req.session.nombreCompleto,
+        rol: req.session.rol
+    });
+});
 
-// Vista de eventos
+app.get('/entradas', ensureAuth, (req, res) =>{
+    res.render('entradas', {
+        layout: 'layout',
+        titulo: "Entradas de Inventario",
+        nombreCompleto: req.session.nombreCompleto,
+        rol: req.session.rol
+    });
+});
+
+app.get('/salidas', ensureAuth, (req, res) =>{
+    res.render('salidas', {
+        layout: 'layout',
+        titulo: "Salidas de Inventario",
+        nombreCompleto: req.session.nombreCompleto,
+        rol: req.session.rol
+    });
+});
+
 app.get('/eventos', ensureAuth, (req, res) =>{
     res.render('eventos', {
         layout: 'layout',
@@ -155,7 +159,6 @@ app.get('/eventos', ensureAuth, (req, res) =>{
     });
 });
 
-// Vista de préstamos
 app.get('/prestamos', ensureAuth, (req, res) =>{
     res.render('prestamos', {
         layout: 'layout',
@@ -165,7 +168,6 @@ app.get('/prestamos', ensureAuth, (req, res) =>{
     });
 });
 
-// Vista de devoluciones
 app.get('/devoluciones', ensureAuth, (req, res) =>{
     res.render('devoluciones', {
         layout: 'layout',
@@ -175,7 +177,6 @@ app.get('/devoluciones', ensureAuth, (req, res) =>{
     });
 });
 
-// Vista de mantenimientos
 app.get('/mantenimientos', ensureAuth, (req, res) =>{
     res.render('mantenimientos', {
         layout: 'layout',

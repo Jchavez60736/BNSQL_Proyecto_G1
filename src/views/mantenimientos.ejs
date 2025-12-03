@@ -21,6 +21,7 @@
                 <table class="table table-hover" id="tablaMantenimientos">
                     <thead class="table-light">
                         <tr>
+                            <th>Item</th>
                             <th>Fecha Inicio</th>
                             <th>Fecha Fin</th>
                             <th>Tipo</th>
@@ -189,10 +190,11 @@
                 datos.data.forEach(m => {
                     cuerpoTabla.innerHTML += `
                         <tr>
+                            <td><strong>${m.idItem.nombreItem}</strong></td>
                             <td>${new Date(m.fechaInicio).toLocaleDateString('es-CR')}</td>
                             <td>${new Date(m.fechaFin).toLocaleDateString('es-CR')}</td>
                             <td>${m.tipoMantenimiento}</td>
-                            <td><strong>${m.responsable.nombreCompleto}</strong></td>
+                            <td>${m.responsable.nombreCompleto}</td>
                             <td>${m.resultado}</td>
                             <td>${m.estado}</td>
                             <td>

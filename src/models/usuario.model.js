@@ -19,13 +19,12 @@ const usuarioSchema = new mongoose.Schema(
             trim: true,
             validate: {
                 validator: function (value) {
-                    // Debe tener mínimo dos nombres y dos apellidos
                     const partes = value.trim().split(/\s+/);
-                    return partes.length >= 4;
+                    return partes.length >= 3;
                 },
-                message: 'El nombre completo debe tener al menos dos nombres y dos apellidos'
+                message: 'El nombre completo debe tener al menos un nombre y dos apellidos'
             },
-            description: 'Nombre completo del usuario (mínimo 4 palabras: 2 nombres y 2 apellidos)'
+            description: 'Nombre completo del usuario (mínimo 3 palabras: 1 nombre y 2 apellidos)'
         },
 
         correo: {
@@ -70,13 +69,9 @@ const usuarioSchema = new mongoose.Schema(
     },
     {
         collection: 'usuarios',
-        timestamps: true, // createdAt y updatedAt automáticos
+        timestamps: true, 
     }
 );
-
-// Índices recomendados
-//usuarioSchema.index({ usuario: 1 }, { unique: true });
-//usuarioSchema.index({ correo: 1 }, { unique: true });
 
 const Usuario = mongoose.model('Usuario', usuarioSchema);
 

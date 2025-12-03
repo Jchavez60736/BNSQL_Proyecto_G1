@@ -1,7 +1,6 @@
 // controllers/proveedor.controller.js
 const Proveedor = require('../models/proveedor.model');
 
-// Crear proveedor
 const crearProveedor = async (req, res) => {
     try {
         const datos = req.body;
@@ -24,7 +23,6 @@ const crearProveedor = async (req, res) => {
     }
 };
 
-// Obtener todos los proveedores (con filtros opcionales)
 const obtenerProveedores = async (req, res) => {
     try {
         const { tipoProveedor, estadoActual } = req.query;
@@ -50,7 +48,6 @@ const obtenerProveedores = async (req, res) => {
     }
 };
 
-// Obtener proveedor por ID
 const obtenerProveedorPorId = async (req, res) => {
     try {
         const { id } = req.params;
@@ -78,7 +75,6 @@ const obtenerProveedorPorId = async (req, res) => {
     }
 };
 
-// Actualizar proveedor
 const actualizarProveedor = async (req, res) => {
     try {
         const { id } = req.params;
@@ -112,7 +108,6 @@ const actualizarProveedor = async (req, res) => {
     }
 };
 
-// Eliminar proveedor
 const eliminarProveedor = async (req, res) => {
     try {
         const { id } = req.params;

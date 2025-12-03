@@ -10,7 +10,6 @@ const {
     eliminarEvento
 } = require('../controllers/evento.controller');
 
-// Rutas base: /api/eventos
 router.post('/', crearEvento);
 router.get('/', obtenerEventos);
 router.get('/:id', obtenerEventoPorId);
