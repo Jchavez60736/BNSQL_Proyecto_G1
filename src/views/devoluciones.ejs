@@ -112,7 +112,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <button type="button" class="btn btn-sm btn-secondary mt-3" onclick="agregarItem()">
+                                <button type="button" class="btn btn-sm btn-secondary mt-3" id="btnAgregarItem" onclick="agregarItem()">
                                     <i class="bi bi-plus"></i> Agregar Item
                                 </button>
                             </div>
@@ -157,6 +157,7 @@
 
         document.getElementById('modalDevolucion').addEventListener('show.bs.modal', () => {
             if (!editando) {
+                habilitarDetalle();
                 cargarPrestamos();
                 cargarPersonas();
                 cargarItems();
@@ -445,9 +446,45 @@
                 fila.querySelector('.estado').value = it.estadoDevolucion;
             }
 
+            deshabilitarDetalle();
+
             document.getElementById('tituloModal').innerText = "Editar Devolución";
             modalDevolucion.show();
 
+        }
+
+        function deshabilitarDetalle() {
+            const filas = document.querySelectorAll('#listaItems .detalle-devolucion-item');
+
+            filas.forEach(fila => {
+                const selectItem = fila.querySelector('.item');
+                const inputCantidad = fila.querySelector('.cantidad');
+                const btnEliminar = fila.querySelector('button');
+
+                if (selectItem) selectItem.disabled = true;
+                if (inputCantidad) inputCantidad.disabled = true;
+                if (btnEliminar) btnEliminar.disabled = true;
+            });
+
+            const btnAgregarItem = document.getElementById('btnAgregarItem');
+            if (btnAgregarItem) btnAgregarItem.disabled = true;
+        }
+
+        function habilitarDetalle() {
+            const filas = document.querySelectorAll('#listaItems .detalle-devolucion-item');
+
+            filas.forEach(fila => {
+                const selectItem = fila.querySelector('.item');
+                const inputCantidad = fila.querySelector('.cantidad');
+                const btnEliminar = fila.querySelector('button');
+
+                if (selectItem) selectItem.disabled = false;
+                if (inputCantidad) inputCantidad.disabled = false;
+                if (btnEliminar) btnEliminar.disabled = false;
+            });
+
+            const btnAgregarItem = document.getElementById('btnAgregarItem');
+            if (btnAgregarItem) btnAgregarItem.disabled = false;
         }
     
         async function eliminarDevolucion(id) {
