@@ -152,6 +152,15 @@ app.get('/salidas', ensureAuth, (req, res) =>{
     });
 });
 
+app.get('/inventario', ensureAuth, (req, res) =>{
+    res.render('consultas', {
+        layout: 'layout',
+        titulo: "Consultas de Inventario",
+        nombreCompleto: req.session.nombreCompleto,
+        rol: req.session.rol
+    });
+});
+
 app.get('/eventos', ensureAuth, (req, res) =>{
     res.render('eventos', {
         layout: 'layout',

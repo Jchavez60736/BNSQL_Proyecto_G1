@@ -32,13 +32,24 @@ const crear = async (req, res) => {
 
 const obtener = async (req, res) => {
     try {
-        const entradas = await Inventario.find()
-        .populate('item');
+        const { buscar } = req.query;
+
+        const filtro = [
+            {$lookup: {from: "items", localField: "item", foreignField: "_id", as: "item"}},
+            {$unwind: "$item"}
+        ];
+
+        if (buscar) {
+            filtro.push({$match: {"item.nombreItem": {$regex: buscar, $options: "i"}}});
+        }
+
+        const entradas = await Inventario.aggregate(filtro);
 
         return res.json({
             ok: true,
             data: entradas
         });
+
     } catch (error) {
         console.error('Error al obtener entradas:', error);
         return res.status(500).json({
@@ -47,6 +58,7 @@ const obtener = async (req, res) => {
         });
     }
 };
+
 
 const obtenerPorId = async (req, res) => {
     try {
