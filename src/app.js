@@ -152,7 +152,7 @@ app.get('/salidas', ensureAuth, (req, res) =>{
     });
 });
 
-app.get('/consultas', ensureAuth, (req, res) =>{
+app.get('/inventario', ensureAuth, (req, res) =>{
     res.render('consultas', {
         layout: 'layout',
         titulo: "Consultas de Inventario",
