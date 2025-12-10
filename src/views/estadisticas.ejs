@@ -1,0 +1,102 @@
+<div class="estadisticas-container">
+
+    <h1 class="titulo">ESTADÍSTICAS GENERALES</h1>
+
+    <div class="grid-estadisticas">
+
+        <div class="card">
+            <h3>Usuarios Registrados</h3>
+            <p>
+                <%= totalUsuarios %>
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Iglesias Registradas</h3>
+            <p>
+                <%= totalIglesias %>
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Proveedores de San José</h3>
+            <p>
+                <%= totalProveedores %>
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Items Activos</h3>
+            <p>
+                <%= totalItemsActivos %>
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Inventario Bajo Stock</h3>
+            <p>
+                <%= totalInventarioBajoStock %>
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Eventos En Curso</h3>
+            <p>
+                <%= totalConsultasEnCurso %>
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Préstamos Pendientes</h3>
+            <p>
+                <%= totalPrestamosPendientes %>
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Devoluciones Dañadas</h3>
+            <p>
+                <%= totalDevolucionesDaniadas %>
+            </p>
+        </div>
+
+        <div class="card">
+            <h3>Mantenimientos Activos</h3>
+            <p>
+                <%= totalMantenimientoActivo %>
+            </p>
+        </div>
+
+        <div class="card pending-loans-card">
+            <h3>Préstamos Pendientes por Responsable</h3>
+
+            <% if (responsablesPendientes.length===0) { %>
+                <p class="empty">No hay préstamos pendientes.</p>
+                <% } else { %>
+
+                    <% responsablesPendientes.forEach(r=> { %>
+
+                        <div class="responsable-item">
+
+                            <div class="info">
+                                <p class="nombre">
+                                    <%= r.nombreCompleto || "Sin responsable" %>
+                                </p>
+                                <p class="pendientes">
+                                    <strong>
+                                        <%= r.totalPendientes %>
+                                    </strong> préstamo(s) pendiente(s)
+                                </p>
+                            </div>
+
+                        </div>
+
+                        <% }) %>
+
+                            <% } %>
+        </div>
+
+
+    </div>
+
+</div>

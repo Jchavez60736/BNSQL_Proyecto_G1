@@ -20,6 +20,7 @@ const eventoRoutes = require('./routes/evento.routes');
 const prestamoRoutes = require('./routes/prestamo.routes');
 const devolucionRoutes = require('./routes/devolucion.routes');
 const mantenimientoRoutes = require('./routes/mantenimiento.routes');
+const estadisticasRoutes = require('./routes/estadisticas.routes');
 
 const expressLayouts = require('express-ejs-layouts');
 
@@ -62,6 +63,7 @@ app.use('/api/eventos', ensureAuth, eventoRoutes);
 app.use('/api/prestamos', ensureAuth, prestamoRoutes);
 app.use('/api/devoluciones', ensureAuth, devolucionRoutes);
 app.use('/api/mantenimientos', ensureAuth, mantenimientoRoutes);
+app.use('/estadisticas', ensureAuth, estadisticasRoutes);
 
 app.get('/home', ensureAuth, (req, res) => {
     res.render('home', {
